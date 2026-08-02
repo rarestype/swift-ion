@@ -25,6 +25,14 @@ let package: Package = .init(
                 .product(name: "Bijection", package: "lexic"),
             ],
         ),
+
+        .testTarget(
+            name: "IonTests",
+            dependencies: [
+                .target(name: "IonABI"),
+                .product(name: "Bijection", package: "lexic"),
+            ]
+        ),
     ]
 )
 
