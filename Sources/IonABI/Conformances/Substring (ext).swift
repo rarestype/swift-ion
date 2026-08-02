@@ -1,0 +1,1 @@
+extension Substring: IonEncodableString, IonDecodableString {}
