@@ -12,7 +12,9 @@ import IonABI
         #expect(try ion.decode(atomic: Int.self) == 0)
     }
 
-    @Test(arguments: [.negative, .positive] as [Ion.Sign]) static func BigIntSmall(_ sign: Ion.Sign) throws {
+    @Test(
+        arguments: [.negative, .positive] as [Ion.Sign]
+    ) static func BigIntSmall(_ sign: Ion.Sign) throws {
         let words: Ion.Magnitude.Words = [
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -439,4 +441,3 @@ import IonABI
         let _: IonCodable<Ion.Struct>.NullGroup.Type = Struct.NullGroup.self
     }
 }
-

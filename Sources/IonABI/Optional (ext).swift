@@ -1,12 +1,12 @@
 extension Optional where Wrapped: ~Copyable {
     @inlinable subscript(default default: () -> Wrapped) -> Wrapped {
         _read {
-           switch self {
-           case let self?:
+            switch self {
+            case let self?:
                 yield self
-           case nil:
+            case nil:
                 yield `default`()
-           }
+            }
         }
         _modify {
             var value: Wrapped? = self.take()

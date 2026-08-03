@@ -204,10 +204,10 @@ extension Ion.Timestamp {
 extension Ion.Timestamp {
     @inlinable public subscript(month: UInt8) -> FractionalYear {
         _read {
-           yield  self.fraction[default: { .init(month: month) }]
+            yield  self.fraction[default: { .init(month: month) }]
         }
         _modify {
-           yield &self.fraction[default: { .init(month: month) }]
+            yield &self.fraction[default: { .init(month: month) }]
         }
     }
 }
