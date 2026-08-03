@@ -1,6 +1,8 @@
 extension Ion {
     /// A type that represents a scope for decoding operations.
-    public protocol FieldDecoder: ~Copyable {
+    public protocol FieldDecoder<ID>: ~Copyable {
+        associatedtype ID
+        var id: ID { get }
         /// Attempts to load a BSON variant value and passes it to the given
         /// closure, returns its result. If decoding fails, the implementation
         /// should annotate the error with appropriate context and re-throw it.

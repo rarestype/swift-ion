@@ -9,6 +9,9 @@ extension Ion.StructDecoder {
         }
     }
 }
+extension Ion.StructDecoder.Field {
+    @inlinable public var id: CodingKey { self._base.id }
+}
 extension Ion.StructDecoder.Field: Ion.FieldDecoder {
     @inline(always) @inlinable public func decode<T>(
         with decode: (borrowing Ion.NodeDecoder) throws -> T
