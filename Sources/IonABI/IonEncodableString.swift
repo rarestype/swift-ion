@@ -10,7 +10,8 @@ extension IonEncodableString where Self: StringProtocol {
     }
 }
 extension IonEncodableString where Self: CustomStringConvertible {
-    /// Encodes the ``description`` of this instance as an Ion UTF-8 string.
+    /// Encodes the ``CustomStringConvertible/description`` of this instance as an Ion UTF-8
+    /// string.
     ///
     /// This default implementation is provided on an extension on a
     /// dedicated protocol rather than an extension on ``IonEncodable``

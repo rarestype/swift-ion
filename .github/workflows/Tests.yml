@@ -78,7 +78,7 @@ jobs:
         name: ${{ matrix.destination }}
         uses: rarestype/swift-device-action/.github/workflows/build.yml@v1
         with:
-            xcode-scheme: 'swift-ion-Package'
+            xcode-scheme: 'swift-ion'
             destination: ${{ matrix.destination }}
             badge-namespace: ${{ github.workflow }}
 
