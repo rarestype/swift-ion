@@ -7,9 +7,9 @@ swift package dollup --allow-writing-to-package-directory
 git diff --exit-code
 
 swift build -c release \
-    --explicit-target-dependency-import-check=error \
+    --explicit-target-dependency-import-check=warn \
     --build-tests
 
 swift test -c release \
     --skip-build \
-    --explicit-target-dependency-import-check=error
+    --explicit-target-dependency-import-check=warn

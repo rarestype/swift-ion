@@ -1,6 +1,6 @@
 <div align="center">
 
-⌛ &nbsp; **swift-ion** &nbsp; ⏳
+🪜 &nbsp; **swift-ion** &nbsp; 🪜
 
 a pure Swift implementation of the Amazon Ion format
 
