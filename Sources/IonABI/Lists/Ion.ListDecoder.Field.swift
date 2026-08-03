@@ -9,6 +9,9 @@ extension Ion.ListDecoder {
         }
     }
 }
+extension Ion.ListDecoder.Field {
+    @inlinable public var id: Int { self._base.id }
+}
 extension Ion.ListDecoder.Field: Ion.FieldDecoder {
     @inline(always) @inlinable public func decode<T>(
         with decode: (borrowing Ion.NodeDecoder) throws -> T

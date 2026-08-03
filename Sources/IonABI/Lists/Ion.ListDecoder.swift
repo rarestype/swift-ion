@@ -25,6 +25,8 @@ extension Ion.ListDecoder: Ion.Decoder {
 extension Ion.ListDecoder {
     @inlinable public var position: Int { self.index }
 
+    // without this, `switch $0[+]` will be unusable
+    @_disfavoredOverload
     @inlinable public subscript(_: (Ion.EndIndex) -> ()) -> FieldAccessor {
         mutating _read {
             do {
