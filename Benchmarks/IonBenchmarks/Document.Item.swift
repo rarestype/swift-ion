@@ -1,6 +1,6 @@
 import Ion
 
-extension IonBenchmarks.StructList {
+extension Document {
     struct Item: Equatable {
         let id: Int
         let label: String
@@ -13,21 +13,28 @@ extension IonBenchmarks.StructList {
         }
     }
 }
-extension IonBenchmarks.StructList.Item {
+extension Document.Item {
+    static func generate(count: Int) -> [Self] {
+        (0 ..< count).map {
+            .init(id: $0, label: "Item_\($0)", value: Double($0) * 1.5)
+        }
+    }
+}
+extension Document.Item {
     enum CodingKey: String, IonSymbolizable {
         case id
         case label
         case value
     }
 }
-extension IonBenchmarks.StructList.Item: IonEncodableStruct {
+extension Document.Item: IonEncodableStruct {
     func encode(to ion: inout Ion.StructEncoder<CodingKey>) {
         ion[.id] = self.id
         ion[.label] = self.label
         ion[.value] = self.value
     }
 }
-extension IonBenchmarks.StructList.Item: IonDecodableStruct {
+extension Document.Item: IonDecodableStruct {
     init(ion: borrowing Ion.StructDecoder<CodingKey>) throws {
         self.id = try ion[.id]?.decode() ?? 0
         self.label = try ion[.label]?.decode() ?? ""

@@ -9,18 +9,18 @@ let package: Package = .init(
     ],
     dependencies: [
         .package(path: ".."),
-        .package(url: "https://github.com/ordo-one/package-benchmark", from: "1.28.0"),
+        .package(url: "https://github.com/ordo-one/benchmark", from: "1.36.2"),
     ],
     targets: [
         .executableTarget(
             name: "IonBenchmarks",
             dependencies: [
                 .product(name: "Ion", package: "swift-ion"),
-                .product(name: "Benchmark", package: "package-benchmark"),
+                .product(name: "Benchmark", package: "benchmark"),
             ],
             path: "IonBenchmarks",
             plugins: [
-                .plugin(name: "BenchmarkPlugin", package: "package-benchmark"),
+                .plugin(name: "BenchmarkPlugin", package: "benchmark"),
             ]
         ),
     ]
