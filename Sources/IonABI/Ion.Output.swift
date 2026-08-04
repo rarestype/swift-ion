@@ -59,6 +59,13 @@ extension Ion.Output {
     }
 }
 extension Ion.Output {
+    @inline(always) @inlinable static var null6: (
+        UInt8, UInt8,
+        UInt8, UInt8,
+        UInt8, UInt8,
+    ) { (0, 0, 0, 0, 0, 0) }
+}
+extension Ion.Output {
     /// Reserves another `bytes` worth of capacity in the output destination, in addition to the
     /// bytes already present.
     @inlinable mutating func reserve(another bytes: Int) {
@@ -73,6 +80,16 @@ extension Ion.Output {
     /// Appends a sequence of bytes to the output destination.
     @inlinable mutating func append(_ bytes: some Sequence<UInt8>) {
         self.bytes.append(contentsOf: bytes)
+    }
+
+    /// Appends a contiguous raw buffer of bytes to the output destination.
+    @inlinable mutating func append(_ bytes: UnsafeRawBufferPointer) {
+        self.bytes.append(contentsOf: bytes)
+    }
+
+    /// Appends a raw span of bytes to the output destination.
+    @inlinable mutating func append(_ bytes: RawSpan) {
+        bytes.withUnsafeBytes { self.bytes.append(contentsOf: $0) }
     }
 }
 extension Ion.Output {
@@ -223,7 +240,7 @@ extension Ion.Output {
             let header: Int = self.bytes.endIndex
 
             self.append(Ion.Node.Types.mask)
-            self.append(repeatElement(0x00, count: 6))
+            withUnsafeBytes(of: Self.null6) { self.append($0) }
 
             let start: Int = self.bytes.endIndex
             let holes: Int = self.holesLength
@@ -270,7 +287,7 @@ extension Ion.Output {
             let header: Int = self.bytes.endIndex
             // 4.4 TB ought to be enough for anybody
             self.append(code)
-            self.append(repeatElement(0x00, count: 6))
+            withUnsafeBytes(of: Self.null6) { self.append($0) }
 
             let start: Int = self.bytes.endIndex
             let holes: Int = self.holesLength
