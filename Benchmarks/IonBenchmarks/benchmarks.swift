@@ -1,6 +1,7 @@
 import Benchmark
 import Ion
 
+
 let benchmarks: @Sendable () -> () = {
     Benchmark.init("Encode/Document") {
         let model: Document = .example
