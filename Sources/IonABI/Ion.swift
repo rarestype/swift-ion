@@ -23,11 +23,11 @@ extension Ion {
         outer.output.append(self.v1_0.2)
         outer.output[types: ._ion_symbol_table, symbols: []] = inner.table.move
 
-        var buffer: ArraySlice<UInt8> = (consume outer).output.move()
+        var buffer: [UInt8] = (consume outer).output.move()
 
         inner.output.move(into: &buffer)
 
-        return .init(bytes: buffer)
+        return .init(bytes: buffer[...])
     }
 
     @inlinable public func decode<Decodable>(
