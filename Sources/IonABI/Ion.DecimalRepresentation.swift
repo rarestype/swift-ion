@@ -35,9 +35,7 @@ extension Ion.DecimalRepresentation {
         let size: Int = self.bytesRequired
 
         output[type: .decimal, size: size]
-        output.reserve(another: size)
-
-        output.write(variable: self.exponent, allocate: false)
+        output.write(variable: self.exponent)
         output += self.coefficient
     }
 }
