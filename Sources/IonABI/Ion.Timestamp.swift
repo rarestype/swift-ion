@@ -147,51 +147,50 @@ extension Ion.Timestamp {
         let size: Int = self.bytesRequired
 
         output[type: .timestamp, size: size]
-        output.reserve(another: size)
 
         if  let offset: Int16 = self.offset {
-            output.write(variable: offset, allocate: false)
+            output.write(variable: offset)
         } else {
             output.append(0xC0)
         }
 
-        output.write(variable: self.year, allocate: false)
+        output.write(variable: self.year)
 
         guard
         let fraction: Ion.Timestamp.FractionalYear = self.fraction else {
             return
         }
 
-        output.write(variable: fraction.month, allocate: false)
+        output.write(variable: fraction.month)
 
         guard
         let fraction: Ion.Timestamp.FractionalMonth = fraction.fraction else {
             return
         }
 
-        output.write(variable: fraction.day, allocate: false)
+        output.write(variable: fraction.day)
 
         guard
         let fraction: Ion.Timestamp.FractionalDay = fraction.fraction else {
             return
         }
 
-        output.write(variable: fraction.hour, allocate: false)
-        output.write(variable: fraction.minute, allocate: false)
+        output.write(variable: fraction.hour)
+        output.write(variable: fraction.minute)
 
         guard
         let fraction: Ion.Timestamp.FractionalMinute = fraction.fraction else {
             return
         }
 
-        output.write(variable: fraction.second, allocate: false)
+        output.write(variable: fraction.second)
 
         guard
         let fraction: Ion.Timestamp.FractionalSecond = fraction.fraction else {
             return
         }
 
-        output.write(variable: fraction.exponent, allocate: false)
+        output.write(variable: fraction.exponent)
 
         guard
         let coefficient: Ion.Coefficient = fraction.coefficient else {

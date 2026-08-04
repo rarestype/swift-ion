@@ -77,15 +77,10 @@ extension Ion.Output {
 }
 extension Ion.Output {
     @inline(always) @inlinable mutating func write<T>(
-        variable: T,
-        allocate: Bool = true
+        variable: T
     ) where T: FixedWidthInteger & SignedInteger {
         let magnitude: T.Magnitude = variable.magnitude
         let size: Int = magnitude.bytesRequiredWithSign
-
-        if  allocate {
-            self.reserve(another: size)
-        }
 
         var sign: Bool = variable < 0
         for j: Int in (0 ..< size).reversed() {
@@ -95,15 +90,11 @@ extension Ion.Output {
     }
 
     @inline(always) @inlinable mutating func write<T>(
-        variable: T,
-        allocate: Bool = true
+        variable: T
     ) where T: FixedWidthInteger & UnsignedInteger {
         let magnitude: T.Magnitude = variable.magnitude
         let size: Int = magnitude.bytesRequired
 
-        if  allocate {
-            self.reserve(another: size)
-        }
         for j: Int in (0 ..< size).reversed() {
             self.append(magnitude[byte: j])
         }
