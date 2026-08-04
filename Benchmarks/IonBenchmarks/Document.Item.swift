@@ -3,7 +3,7 @@ import Ion
 extension Document {
     struct Item: Equatable {
         let id: Int
-        let label: String
+        let label: String?
         let value: Double
 
         init(id: Int, label: String, value: Double) {
@@ -31,13 +31,13 @@ extension Document.Item: IonEncodableStruct {
     func encode(to ion: inout Ion.StructEncoder<CodingKey>) {
         ion[.id] = self.id
         ion[.label] = self.label
-        ion[.value] = self.value
+        ion[.value] = self.value == 0 ? nil : self.value
     }
 }
 extension Document.Item: IonDecodableStruct {
     init(ion: borrowing Ion.StructDecoder<CodingKey>) throws {
-        self.id = try ion[.id]?.decode() ?? 0
-        self.label = try ion[.label]?.decode() ?? ""
-        self.value = try ion[.value]?.decode() ?? 0.0
+        self.id = try ion[.id].decode()
+        self.label = try ion[.label]?.decode()
+        self.value = try ion[.value]?.decode() ?? 0
     }
 }

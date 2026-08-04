@@ -29,8 +29,8 @@ extension Document.Metadata: IonEncodableStruct {
 }
 extension Document.Metadata: IonDecodableStruct {
     init(ion: borrowing Ion.StructDecoder<CodingKey>) throws {
-        self.owner = try ion[.owner]?.decode() ?? ""
-        self.environment = try ion[.environment]?.decode() ?? ""
+        self.owner = try ion[.owner].decode()
+        self.environment = try ion[.environment].decode()
         self.attributes = try ion[.attributes]?.decode() ?? []
     }
 }
