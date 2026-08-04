@@ -96,3 +96,37 @@ jobs:
             -   name: 💖 Update badge 💖
                 uses: rarestype/rarestbadge@v1
                 if: always()
+
+    benchmarks:
+        strategy:
+            matrix:
+                runner:
+                    -   id: ubuntu-24.04
+                        arch: x86_64
+                    -   id: ubuntu-24.04-arm
+                        arch: aarch64
+
+        runs-on: ${{ matrix.runner.id }}
+        name: Benchmark (${{ matrix.runner.arch }})
+        needs: changes
+        if: needs.changes.outputs.code_changed == 'true' && github.event_name == 'pull_request'
+        steps:
+            -   name: 🩵 Install Swift 🩵
+                uses: rarestype/swift-install-action@v1
+                with:
+                    swift-release: 6.3.3-RELEASE
+
+            -   name: 🩵 Checkout repository 🩵
+                uses: actions/checkout@v6
+
+            -   name: 🩵 Run benchmarks 🩵
+                run: Scripts/Benchmark
+
+            -   name: 🩵 Upload benchmark timings 🩵
+                uses: actions/upload-artifact@v7
+                with:
+                    name: timings-${{ matrix.runner.arch }}
+                    path: 'artifacts/*'
+                    retention-days: 1
+                    compression-level: 0
+

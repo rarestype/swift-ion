@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -euo pipefail
+
+mkdir -p artifacts
+OUTPUT_PATH="$(pwd)/artifacts/benchmark_results.md"
+
+swift package \
+    --package-path Benchmarks \
+    --allow-writing-to-package-directory \
+    benchmark \
+    --format markdown > "$OUTPUT_PATH" 2>&1
