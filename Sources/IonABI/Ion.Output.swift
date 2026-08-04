@@ -1,12 +1,12 @@
 extension Ion {
     @frozen @usableFromInline struct Output: Sendable {
-        @usableFromInline var bytes: ArraySlice<UInt8>
+        @usableFromInline var bytes: [UInt8]
         @usableFromInline var holes: [Range<Int>]
         @usableFromInline var holesLength: Int
 
         /// Create an output with a pre-allocated destination buffer. The buffer
         /// does *not* need to be empty, and existing data will not be cleared.
-        @inlinable public init(preallocated bytes: ArraySlice<UInt8>) {
+        @inlinable public init(preallocated bytes: [UInt8]) {
             self.bytes = bytes
             self.holes = []
             self.holesLength = 0
@@ -15,7 +15,7 @@ extension Ion {
         /// Create an empty output, reserving enough space for the specified
         /// number of bytes in the destination buffer.
         @inlinable public init(capacity: Int) {
-            self.bytes = .init()
+            self.bytes = []
             self.bytes.reserveCapacity(capacity)
             self.holes = []
             self.holesLength = 0
@@ -23,20 +23,21 @@ extension Ion {
     }
 }
 extension Ion.Output {
-    @inlinable consuming func move() -> ArraySlice<UInt8> {
-        var buffer: ArraySlice<UInt8> = []
+    @inlinable consuming func move() -> [UInt8] {
+        var buffer: [UInt8] = []
         self.move(into: &buffer)
         return buffer
     }
 
-    @inlinable consuming func move(into buffer: inout ArraySlice<UInt8>) {
+    @inlinable consuming func move(into buffer: inout [UInt8]) {
         if !self.holes.isEmpty {
+            buffer.reserveCapacity(buffer.count + (self.bytes.count - self.holesLength))
             self.holes.sort { $0.lowerBound < $1.lowerBound }
 
             let first: Int = self.holes.startIndex
             let hole: Range<Int> = self.holes[first]
             if  buffer.isEmpty {
-                buffer = self.bytes[..<hole.lowerBound]
+                buffer = [UInt8].init(self.bytes[..<hole.lowerBound])
             } else {
                 buffer += self.bytes[..<hole.lowerBound]
             }
