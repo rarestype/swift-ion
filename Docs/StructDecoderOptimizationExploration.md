@@ -42,6 +42,16 @@ While we successfully eliminated **400,000 heap allocations** for 200,000 decode
 - **Idea**: Store small 32-byte field offset descriptors (`Ion.Struct.Index`: `id`, `offset`, `header`) instead of pre-parsing 96-byte `Ion.Node` values. Parse values lazily on-demand when subscript `ion[.field]` is queried.
 - **Inline storage**: Used named inline fields (`f0...f3` or `f0...f7`) for structs with $\le 4$ or $\le 8$ fields, with a dictionary fallback for larger structs.
 
+### 5. Optimizing `Ion.Symbol.hash` bulk byte hashing
+- **Idea**: Replace the byte-by-byte Swift loop in `Ion.Symbol.hash(into:)` (`for unit: UInt8 in self.utf8 { unit.hash(into: &hasher) }`) with `String(self.utf8).hash(into: &hasher)` to leverage vectorized bulk byte hashing in the Swift runtime.
+- **Evaluation**: Scientifically profiled and measured.
+- **Findings**:
+    - Profiling confirmed the hypothesis that Unicode string key lookup in `key.get(in: self.table)` is a non-negligible bottleneck: completely bypassing key symbol lookups (via pre-cached `Symbol.ID` indices) reduced total decode latency from **263.49 ms** to **193.46 ms** (a ~70 ms / 26.5% overall speedup for 200k structs).
+    - However, optimizing only `Ion.Symbol.hash(into:)` produced a minimal wall-clock latency reduction of only **~5–7 ms** (from 283–285 ms down to ~278 ms).
+- **Rationale for Rejection**:
+    - The dominant bottleneck in dynamic `CodingKey` lookups is not merely the byte loop inside `hash(into:)`, but the full dynamic string lookup cycle per field access (`CodingKey.rawValue` string creation, `Ion.Symbol` initialization, dictionary bucket resolution, and ARC reference count management).
+    - Micro-optimizing `hash(into:)` alone yields marginal returns (~2%), making it insufficient to justify altering the symbol hashing logic without addressing the broader lookup mechanism.
+
 #### Metrics comparison
 
 | Strategy | Total malloc count | Total malloc bytes | Wall-clock time (200k structs) |
@@ -49,6 +59,7 @@ While we successfully eliminated **400,000 heap allocations** for 200,000 decode
 | **Baseline (`[Symbol.ID: Node]`)** | 1,202,000 | 1,035 MB | **281 ms** |
 | **Offset indexing (`ContiguousArray`)** | 1,002,000 | 1,002 MB | **281 ms** |
 | **Offset indexing (`FixedArray4` inline)** | **802,000** | **1,025 MB** | **292 ms** |
+| **Optimized `Ion.Symbol.hash`** | 1,202,000 | 1,035 MB | **278 ms** |
 
 #### Lessons and tradeoffs
 1. **Allocation victory**: `FixedArray` inline field offset storage achieved **0 heap allocations per struct decoder instance** for structs with $\le 4$ fields, eliminating **400,000 heap allocations**.
