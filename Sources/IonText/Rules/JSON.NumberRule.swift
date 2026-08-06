@@ -1,6 +1,6 @@
 internal import Grammar
 
-extension JSON {
+extension AST {
     /// Matches a numeric literal.
     ///
     /// Numeric literals are always written in decimal.
@@ -20,12 +20,12 @@ extension JSON {
     /// exponent field can use a prefix `+`.
     enum NumberRule<Location> {}
 }
-extension JSON.NumberRule: ParsingRule {
+extension AST.NumberRule: ParsingRule {
     typealias Terminal = UInt8
 
     static func parse<Source>(
         _ input: inout ParsingInput<some ParsingDiagnostics<Source>>
-    ) throws(PatternMatchingError) -> JSON.Number
+    ) throws(PatternMatchingError) -> AST.Number
         where Source.Element == Terminal, Source.Index == Location {
         /// ASCII decimal digit terminals.
         typealias DecimalDigit<T> = UnicodeDigit<Location, UInt8, T>.Decimal
@@ -35,7 +35,7 @@ extension JSON.NumberRule: ParsingRule {
 
         let start: Source.Index = input.index
         // https://datatracker.ietf.org/doc/html/rfc8259#section-6
-        // JSON does not allow prefix '+'
+        // AST does not allow prefix '+'
         let sign: FloatingPointSign
         switch input.parse(as: ASCII.Hyphen?.self) {
         case  _?: sign = .minus
@@ -119,9 +119,9 @@ extension JSON.NumberRule: ParsingRule {
                     places = 0
                 }
 
-                if  shift < JSON.Number.Exp10.endIndex,
+                if  shift < AST.Number.Exp10.endIndex,
                     case (let shifted, false) = units.multipliedReportingOverflow(
-                        by: JSON.Number.Exp10[shift]
+                        by: AST.Number.Exp10[shift]
                     ) {
                     units = shifted
                 } else {
@@ -129,14 +129,20 @@ extension JSON.NumberRule: ParsingRule {
                 }
             }
 
-            return .inline(.init(sign: sign, units: units, places: places))
+            // return .inline(.init(sign: sign, units: units, places: places))
+            _ = (sign, units, places)
+            return .unimplemented
         } else if
             let units: UInt64 {
-            return .inline(.init(sign: sign, units: units, places: places))
+            // return .inline(.init(sign: sign, units: units, places: places))
+            _ = (sign, units, places)
+            return .unimplemented
         }
 
         /// number is not representable in efficient format, fall back to string
         let end: Location = input.index
-        return .fallback(String.init(decoding: input[start ..< end], as: Unicode.UTF8.self))
+        // return .fallback(String.init(decoding: input[start ..< end], as: Unicode.UTF8.self))
+        _ = (start, end)
+        return .unimplemented
     }
 }

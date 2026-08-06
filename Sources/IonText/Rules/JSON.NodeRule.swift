@@ -1,42 +1,46 @@
 internal import Grammar
+import IonABI
 
-extension JSON {
+extension AST {
     /// Matches any value, including fragment values.
     ///
-    /// Only use this if you are doing manual JSON parsing. Most web services
-    /// should send complete ``JSON.RootRule`` messages through their public APIs.
+    /// Only use this if you are doing manual AST parsing. Most web services
+    /// should send complete ``AST.RootRule`` messages through their public APIs.
     enum NodeRule<Location> {}
 }
-extension JSON.NodeRule: ParsingRule {
+extension AST.NodeRule: ParsingRule {
     typealias Terminal = UInt8
 
     static func parse<Source>(
         _ input: inout ParsingInput<some ParsingDiagnostics<Source>>
-    ) throws(PatternMatchingError) -> JSON.Node
+    ) throws(PatternMatchingError) -> AST.Node
         where Source.Element == Terminal, Source.Index == Location {
-        if  let number: JSON.Number = input.parse(as: JSON.NumberRule<Location>?.self) {
-            return .number(number)
+        let value: AST.AnyValue
+        if  let number: AST.Number = input.parse(as: AST.NumberRule<Location>?.self) {
+            value = .number(number)
         } else if
-            let string: String = input.parse(as: JSON.StringRule<Location>?.self) {
-            return .string(string)
+            let string: String = input.parse(as: AST.StringRule<Location>?.self) {
+            value = .string(string)
         } else if
-            let items: [(JSON.Key, JSON.Node)] = input.parse(as: Object?.self) {
-            return .object(.init(items))
+            let items: [(AST.SymbolKey, AST.Node)] = input.parse(as: Object?.self) {
+            value = .struct(items)
         } else if
-            let elements: [JSON.Node] = input.parse(as: Array?.self) {
-            return .array(.init(elements))
+            let elements: [AST.Node] = input.parse(as: Array?.self) {
+            value = .list(elements)
         } else if
             let _: Void = input.parse(as: True?.self) {
-            return .bool(true)
+            value = .bool(true)
         } else if
             let _: Void = input.parse(as: False?.self) {
-            return .bool(false)
+            value = .bool(false)
         } else if
-            let number: JSON.Number = input.parse(as: JSON.NodeRule<Location>.Nonfinite?.self) {
-            return .number(number)
+            let number: AST.Number = input.parse(as: AST.NodeRule<Location>.Nonfinite?.self) {
+            value = .number(number)
         } else {
             try input.parse(as: Null.self)
-            return .null
+            value = .null(.null)
         }
+
+        return .init(types: nil, value: value)
     }
 }

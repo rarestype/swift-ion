@@ -1,6 +1,6 @@
 internal import Grammar
 
-extension JSON.NodeRule {
+extension AST.NodeRule {
     /// A literal `null` expression.
     enum Null: LiteralRule {
         typealias Terminal = UInt8

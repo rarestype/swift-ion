@@ -1,0 +1,24 @@
+import Ion
+
+extension AST {
+    enum AnyValue: Sendable {
+        case null(Ion.AnyType)
+        case bool(Bool)
+        case int(Ion.Sign, Ion.Magnitude)
+        case float(Ion.FloatRepresentation)
+        case decimal(Ion.DecimalRepresentation)
+        case timestamp(Ion.Timestamp)
+        case symbol(SymbolKey)
+        case string(String)
+        case clob([UInt8])
+        case blob([UInt8])
+        case list([Node])
+        case sexp([Node])
+        case `struct`([(key: SymbolKey, value: Node)])
+    }
+}
+extension AST.AnyValue {
+    static func number(_ number: AST.Number) -> Self {
+        fatalError("unimplemented")
+    }
+}

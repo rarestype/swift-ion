@@ -1,12 +1,12 @@
 internal import Grammar
 
-extension JSON.StringRule {
+extension AST.StringRule {
     /// Matches a sequence of escaped UTF-16 code units.
     ///
     /// A UTF-16 escape sequence consists of `\u`, followed by four hexadecimal digits.
     enum EscapeSequence {}
 }
-extension JSON.StringRule.EscapeSequence: ParsingRule {
+extension AST.StringRule.EscapeSequence: ParsingRule {
     typealias Terminal = UInt8
 
     static func parse<Source>(
@@ -20,7 +20,7 @@ extension JSON.StringRule.EscapeSequence: ParsingRule {
         var unescaped: String = ""
         while true {
             if  let scalar: Unicode.Scalar = input.parse(
-                    as: JSON.StringRule<Location>.EscapedCodeUnit?.self
+                    as: AST.StringRule<Location>.EscapedCodeUnit?.self
                 ) {
                 unescaped.append(Character.init(scalar))
             } else {
@@ -30,10 +30,10 @@ extension JSON.StringRule.EscapeSequence: ParsingRule {
                 (try input.parse(as: HexDigit.self) <<  8) |
                 (try input.parse(as: HexDigit.self) <<  4) |
                 (try input.parse(as: HexDigit.self))
-                if let scalar: Unicode.Scalar = Unicode.Scalar.init(value) {
+                if  let scalar: Unicode.Scalar = Unicode.Scalar.init(value) {
                     unescaped.append(Character.init(scalar))
                 } else {
-                    throw .arbitrary(JSON.InvalidUnicodeScalarError.init(value: value))
+                    throw .arbitrary(AST.InvalidUnicodeScalarError.init(value: value))
                 }
             }
 

@@ -39,6 +39,7 @@ let package: Package = .init(
             name: "IonTests",
             dependencies: [
                 .target(name: "Ion"),
+                .target(name: "IonText"),
                 .product(name: "Bijection", package: "lexic"),
             ]
         ),

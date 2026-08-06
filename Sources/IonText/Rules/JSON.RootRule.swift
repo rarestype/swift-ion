@@ -1,20 +1,20 @@
 internal import Grammar
 
-extension JSON {
+extension AST {
     /// All of the parsing rules in this library are defined at the UTF-8 level.
     ///
-    /// To parse *any* JSON value, including fragment values, use ``JSON.NodeRule`` instead.
+    /// To parse *any* AST value, including fragment values, use ``AST.NodeRule`` instead.
     ///
-    /// You can parse JSON expressions from any ``Collection`` with an
+    /// You can parse AST expressions from any ``Collection`` with an
     /// ``Collection Element`` type of ``UInt8``. For example, you can parse
-    /// a ``String`` through its ``String UTF8View``.
+    /// a ``String`` through its ``String/UTF8View``.
     /**
     ```swift
     let string:String =
     """
     {"success":true,"value":0.1}
     """
-    try JSON.RootRule<String.Index>.parse(string.utf8)
+    try AST.RootRule<String.Index>.parse(string.utf8)
     ```
     */
     /// However, you could also parse a UTF-8 buffer directly, without
@@ -28,38 +28,34 @@ extension JSON {
          34, 118,  97, 108, 117, 101,  34,  58,
          48,  46,  49, 125
     ]
-    try JSON.RootRule<Array<UInt8>.Index>.parse(utf8)
+    try AST.RootRule<Array<UInt8>.Index>.parse(utf8)
     ```
     */
     /// The generic `Location`
     /// parameter provides this flexibility as a zero-cost abstraction.
     ///
     /// >   Tip:
-    ///     The ``/swift-grammar`` and ``/swift-json`` libraries are transparent!
+    ///     The ``/gram`` and ``/swift-ion`` libraries are transparent!
     ///     This means that its parsing rules are always zero-cost abstractions,
     ///     even when applied to third-party collection types, like
     ///     ``/swift-nio/NIOCore/ByteBufferView``.
     enum RootRule<Location> {}
 }
-extension JSON.RootRule: ParsingRule {
+extension AST.RootRule: ParsingRule {
     typealias Terminal = UInt8
 
     static func parse<Source>(
         _ input: inout ParsingInput<some ParsingDiagnostics<Source>>
-    ) throws(PatternMatchingError) -> JSON.Node
+    ) throws(PatternMatchingError) -> AST.Node
         where Source.Element == Terminal, Source.Index == Location {
-        if  let items: [(JSON.Key, JSON.Node)] = input.parse(
-                as: JSON.NodeRule<Location>.Object?.self
+        let value: AST.AnyValue
+        if  let items: [(AST.SymbolKey, AST.Node)] = input.parse(
+                as: AST.NodeRule<Location>.Object?.self
             ) {
-            return .object(.init(items))
+            value = .struct(items)
         } else {
-            return .array(
-                .init(
-                    try input.parse(
-                        as: JSON.NodeRule<Location>.Array.self
-                    )
-                )
-            )
+            value = .list(try input.parse(as: AST.NodeRule<Location>.Array.self))
         }
+        return .init(types: nil, value: value)
     }
 }

@@ -1,6 +1,6 @@
 internal import Grammar
 
-extension JSON {
+extension AST {
     typealias CommaRule<Location> = Pattern.Pad<
         UnicodeEncoding<Location, UInt8>.Comma,
         WhitespaceRule<Location>

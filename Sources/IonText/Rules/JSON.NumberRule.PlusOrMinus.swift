@@ -1,6 +1,6 @@
 internal import Grammar
 
-extension JSON.NumberRule {
+extension AST.NumberRule {
     /// Matches an ASCII `+` or `-` sign.
     enum PlusOrMinus: TerminalRule {
         typealias Terminal = UInt8
@@ -8,9 +8,9 @@ extension JSON.NumberRule {
 
         static func parse(terminal: UInt8) -> FloatingPointSign? {
             switch terminal {
-            case 0x2b:  .plus
-            case 0x2d:  .minus
-            default:    nil
+            case 0x2b: .plus
+            case 0x2d: .minus
+            default: nil
             }
         }
     }

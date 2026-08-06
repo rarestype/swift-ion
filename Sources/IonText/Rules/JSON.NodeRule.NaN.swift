@@ -1,6 +1,6 @@
 internal import Grammar
 
-extension JSON.NodeRule {
+extension AST.NodeRule {
     /// A literal `nan` expression, all lowercase.
     enum NaN: LiteralRule {
         typealias Terminal = UInt8

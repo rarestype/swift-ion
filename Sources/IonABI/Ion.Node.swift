@@ -1,7 +1,12 @@
 extension Ion {
     @frozen public struct Node {
-        @usableFromInline var types: Types?
-        @usableFromInline var value: AnyValue
+        public var types: Types?
+        public var value: AnyValue
+
+        @inlinable public init(types: Types? = nil, value: AnyValue) {
+            self.types = types
+            self.value = value
+        }
     }
 }
 extension Ion.Node {

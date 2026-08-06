@@ -1,24 +1,24 @@
 internal import Grammar
 
-extension JSON.NodeRule.Object {
+extension AST.NodeRule.Object {
     /// Matches an key-value expression.
     ///
-    /// A key-value expression consists of a ``JSON.StringRule``, a ``JSON.ColonRule``, and
-    /// a recursive instance of ``JSON.NodeRule``.
+    /// A key-value expression consists of a ``AST.StringRule``, a ``AST.ColonRule``, and
+    /// a recursive instance of ``AST.NodeRule``.
     enum Item {}
 }
-extension JSON.NodeRule.Object.Item: ParsingRule {
+extension AST.NodeRule.Object.Item: ParsingRule {
     typealias Terminal = UInt8
 
     static func parse<Source>(
         _ input: inout ParsingInput<some ParsingDiagnostics<Source>>
     ) throws(PatternMatchingError) -> (
-        key: JSON.Key,
-        value: JSON.Node
+        key: AST.SymbolKey,
+        value: AST.Node
     ) where Source.Index == Location, Source.Element == Terminal {
-        let key: String  = try input.parse(as: JSON.StringRule<Location>.self)
-        try input.parse(as: JSON.ColonRule<Location>.self)
-        let value: JSON.Node  = try input.parse(as: JSON.NodeRule<Location>.self)
-        return (.init(rawValue: key), value)
+        let key: String = try input.parse(as: AST.StringRule<Location>.self)
+        try input.parse(as: AST.ColonRule<Location>.self)
+        let value: AST.Node = try input.parse(as: AST.NodeRule<Location>.self)
+        return (.text(key), value)
     }
 }

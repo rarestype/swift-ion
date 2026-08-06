@@ -1,22 +1,24 @@
 internal import Grammar
 
-extension JSON.NodeRule {
+extension AST.NodeRule {
     enum Nonfinite: ParsingRule {
         typealias Terminal = UInt8
 
         static func parse<Source>(
             _ input: inout ParsingInput<some ParsingDiagnostics<Source>>
-        ) throws(PatternMatchingError) -> JSON.Number
+        ) throws(PatternMatchingError) -> AST.Number
             where Source.Element == Terminal, Source.Index == Location {
 
             if  let _: Void = input.parse(
                     as: UnicodeEncoding<Location, UInt8>.LowercaseS?.self
                 ) {
-                try input.parse(as: JSON.NodeRule<Location>.NaN.self)
-                return .snan
+                try input.parse(as: AST.NodeRule<Location>.NaN.self)
+                // return .snan
+                return .unimplemented
             } else if
-                let _: Void = input.parse(as: JSON.NodeRule<Location>.NaN?.self) {
-                return .nan
+                let _: Void = input.parse(as: AST.NodeRule<Location>.NaN?.self) {
+                // return .nan
+                return .unimplemented
             }
 
             let sign: FloatingPointSign
@@ -27,7 +29,9 @@ extension JSON.NodeRule {
             }
 
             try input.parse(as: Inf.self)
-            return .infinity(sign)
+            // return .infinity(sign)
+            _ = sign
+            return .unimplemented
         }
     }
 }

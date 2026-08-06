@@ -1,12 +1,12 @@
 internal import Grammar
 
-extension JSON {
+extension AST {
     /// Matches a string literal.
     ///
     /// String literals always begin and end with an ASCII double quote character (`"`).
     enum StringRule<Location> {}
 }
-extension JSON.StringRule: ParsingRule {
+extension AST.StringRule: ParsingRule {
     typealias Terminal = UInt8
 
     static func parse<Source>(
@@ -17,17 +17,17 @@ extension JSON.StringRule: ParsingRule {
 
         try input.parse(as: DoubleQuote.self)
 
-        let start: Location      = input.index
+        let start: Location = input.index
         input.parse(as: CodeUnit.self, in: Void.self)
-        let end: Location        = input.index
-        var string: String       = .init(decoding: input[start ..< end], as: Unicode.UTF8.self)
+        let end: Location = input.index
+        var string: String = .init(decoding: input[start ..< end], as: Unicode.UTF8.self)
 
-        while let next: String   = input.parse(as: EscapeSequence?.self) {
-            string             += next
-            let start: Location  = input.index
+        while let next: String = input.parse(as: EscapeSequence?.self) {
+            string += next
+            let start: Location = input.index
             input.parse(as: CodeUnit.self, in: Void.self)
-            let end: Location    = input.index
-            string             += .init(decoding: input[start ..< end], as: Unicode.UTF8.self)
+            let end: Location = input.index
+            string += .init(decoding: input[start ..< end], as: Unicode.UTF8.self)
         }
 
         try input.parse(as: DoubleQuote.self)
