@@ -10,6 +10,7 @@ let package: Package = .init(
     dependencies: [
         .package(url: "https://github.com/ordo-one/dollup", from: "1.0.1"),
         .package(url: "https://github.com/ordo-one/lexic", from: "1.7.0"),
+        .package(url: "https://github.com/rarestype/gram", from: "2.0.0"),
     ],
     targets: [
         .target(
@@ -23,6 +24,14 @@ let package: Package = .init(
             name: "IonABI",
             dependencies: [
                 .product(name: "Bijection", package: "lexic"),
+            ],
+        ),
+
+        .target(
+            name: "IonText",
+            dependencies: [
+                .target(name: "IonABI"),
+                .product(name: "Grammar", package: "gram"),
             ],
         ),
 
