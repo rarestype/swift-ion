@@ -44,7 +44,7 @@ jobs:
             -   name: 🩵 Generate notes 🩵
                 run: |
                     summary=$(
-                        echo "### 🚀 Ion Benchmark Results"
+                        echo "## ✰ benchmark results ✰"
                         echo ""
                         for arch in x86_64 aarch64; do
                             file="timings-${arch}/benchmark_results.md"
@@ -62,6 +62,7 @@ jobs:
             -   name: 🩵 Publish PR comment 🩵
                 uses: marocchino/sticky-pull-request-comment@v3
                 with:
+                    GITHUB_TOKEN: ${{ secrets.RARESTBOT_PAT }}
                     header: benchmark-results
                     path: summary_benchmark.md
                     number: ${{ steps.pr.outputs.id }}

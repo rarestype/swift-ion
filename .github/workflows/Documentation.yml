@@ -28,17 +28,7 @@ jobs:
                 uses: tj-actions/changed-files@v47
                 id: changes
                 with:
-                    files_ignore: |
-                        README.md
-                        LICENSE
-                        NOTICE
-                        .mailmap
-                        .gitignore
-                        .github/FUNDING.yml
-                        .github/workflows/Deploy.yml
-                        .github/workflows/Security.yml
-                        .github/workflows/SemanticRelease.yml
-                        .github/workflows/SemanticTitle.yml
+                    files_ignore_from_source_file: .github/autosync/SkipDocumentation.txt
         outputs:
             code_changed: ${{ steps.changes.outputs.any_changed }}
 
@@ -51,7 +41,7 @@ jobs:
             -   name: 🤍 Install Swift 🤍
                 uses: rarestype/swift-install-action@v1
                 with:
-                    swift-release: 6.3.2-RELEASE
+                    swift-release: 6.3.3-RELEASE
 
             -   name: 🤍 Install Unidoc 🤍
                 uses: rarestype/unidoc-action@v1
@@ -82,8 +72,8 @@ jobs:
             -   name: 🤍 Checkout repository 🤍
                 uses: actions/checkout@v6
 
-            -   name: 🤍 Select Xcode 26.5 🤍
-                run: sudo xcode-select -s /Applications/Xcode_26.5.app/Contents/Developer
+            -   name: 🤍 Select Xcode 26.6 🤍
+                run: sudo xcode-select -s /Applications/Xcode_26.6.app/Contents/Developer
 
             -   name: 🤍 Validate documentation 🤍
                 run: |
