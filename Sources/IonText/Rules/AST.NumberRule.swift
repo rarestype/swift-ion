@@ -1,4 +1,5 @@
 internal import Grammar
+import IonABI
 
 extension AST {
     /// Matches a numeric literal.
@@ -34,13 +35,7 @@ extension AST.NumberRule: ParsingRule {
         typealias ASCII = UnicodeEncoding<Location, UInt8>
 
         let start: Source.Index = input.index
-        // https://datatracker.ietf.org/doc/html/rfc8259#section-6
-        // AST does not allow prefix '+'
-        let sign: FloatingPointSign
-        switch input.parse(as: ASCII.Hyphen?.self) {
-        case  _?: sign = .minus
-        case nil: sign = .plus
-        }
+        let sign: Ion.Sign? = input.parse(as: PlusOrMinus?.self)
 
         /// parse integral component
         var units: UInt64? = try input.parse(as: DecimalDigit<UInt64>.self)
@@ -83,27 +78,27 @@ extension AST.NumberRule: ParsingRule {
             }
         }
 
-        let exponent: (sign: FloatingPointSign, magnitude: UInt32)?
+        let exponent: (sign: Ion.Sign, magnitude: UInt32)?
         if  let _: Void = input.parse(as: ASCII.E?.self) {
-            let sign: FloatingPointSign? = input.parse(as: PlusOrMinus?.self)
+            let sign: Ion.Sign? = input.parse(as: PlusOrMinus?.self)
             let magnitude: UInt32 = try input.parse(
                 as: Pattern.UnsignedInteger<DecimalDigit<UInt32>>.self
             )
 
-            exponent = magnitude > 0 ? (sign: sign ?? .plus, magnitude: magnitude) : nil
+            exponent = magnitude > 0 ? (sign: sign ?? .positive, magnitude: magnitude) : nil
         } else {
             exponent = nil
         }
 
         representable:
-        if  let exponent: (sign: FloatingPointSign, magnitude: UInt32),
+        if  let exponent: (sign: Ion.Sign, magnitude: UInt32),
             var units: UInt64 {
             switch exponent.sign {
-            case .minus:
+            case .negative:
                 // note: potential crash if `exponent.magnitude` is absurdly large
                 places += exponent.magnitude
 
-            case .plus:
+            case .positive:
                 guard places < exponent.magnitude else {
                     // note: see above
                     places -= exponent.magnitude
