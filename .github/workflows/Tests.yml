@@ -127,6 +127,6 @@ jobs:
                 with:
                     name: timings-${{ matrix.runner.arch }}
                     path: 'Benchmarks/.timings/*'
+                    include-hidden-files: true
                     retention-days: 1
                     compression-level: 0
-

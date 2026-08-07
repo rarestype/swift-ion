@@ -44,7 +44,7 @@ jobs:
             -   name: 🩵 Generate notes 🩵
                 run: |
                     summary=$(
-                        echo "### 🚀 Ion Benchmark Results"
+                        echo "## ✰ benchmark results ✰"
                         echo ""
                         for arch in x86_64 aarch64; do
                             file="timings-${arch}/benchmark_results.md"
