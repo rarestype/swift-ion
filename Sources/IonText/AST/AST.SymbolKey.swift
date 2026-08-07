@@ -1,4 +1,4 @@
-import Ion
+import IonABI
 
 extension AST {
     enum SymbolKey: Equatable, Hashable, Sendable {
