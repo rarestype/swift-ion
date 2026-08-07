@@ -62,6 +62,7 @@ jobs:
             -   name: 🩵 Publish PR comment 🩵
                 uses: marocchino/sticky-pull-request-comment@v3
                 with:
+                    GITHUB_TOKEN: ${{ secrets.RARESTBOT_PAT }}
                     header: benchmark-results
                     path: summary_benchmark.md
                     number: ${{ steps.pr.outputs.id }}
