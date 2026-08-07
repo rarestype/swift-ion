@@ -1,6 +1,9 @@
 <!-- ❣❣❣  DO NOT EDIT  ❣  THIS FILE IS AUTOMATICALLY SYNCED  ❣  DO NOT EDIT  ❣❣❣ -->
 ## English writing style
 
+
+
+
 When producing summaries, design docs, or any other English prose, use Wikipedia-style sentence casing, including in headings. The first letter in a sentence is capitalized, except if it begins a word which is always left uncapitalized (as in “eBay”).
 
 Always use unicode curly quotes (`“”`, `‘’`) when writing English prose, including code comments.
