@@ -19,41 +19,26 @@ extension Ion.Magnitude.Words: RandomAccessCollection {
     }
 }
 extension Ion.Magnitude.Words {
-    @inlinable public func load<T>(
-        into _: T.Type = T.self
-    ) -> T where T: UnsignedInteger & FixedWidthInteger {
-        return self.bytes.withUnsafeBytes {
-            guard
-            let first: UnsafeRawPointer = $0.baseAddress, !$0.isEmpty else {
-                return .zero
-            }
-            let bytes: Int = $0.count
+    @inlinable var trimmed: Self { .init(bytes: self.bytes.drop { $0 == 0 }) }
+}
+extension Ion.Magnitude.Words {
+    @inlinable public func load<T>(into _: T.Type = T.self) -> T where T: UnsignedInteger {
+        // this is an iterative algorithm that pushes bytes one by one to `T`. it was intended
+        // to be used with a custom bigint receiver type, but benchmarks indicate it is also
+        // faster than an “optimized” raw memory-copying approach for fixed-width integer types.
+        if  self.bytes.isEmpty {
+            return .zero
+        }
+        var i: Int = self.bytes.startIndex
+        var value: T = T.init(self.bytes[i])
+        while true {
+            i = self.bytes.index(after: i)
 
-            let length: Int
-            let offset: Int
-            let source: UnsafeRawPointer
-
-            let target: Int = MemoryLayout<T>.size
-            if  target > bytes {
-                // source buffer is smaller than the target, pad with zeroes
-                length = bytes
-                offset = target - bytes
-                source = first
-            } else {
-                // source buffer is larger than the target, truncate
-                // (caller is responsible for bounds checking)
-                length = target
-                offset = 0
-                source = first.advanced(by: bytes - target)
+            guard i < self.bytes.endIndex else {
+                return value
             }
 
-            var bigEndian: T = .zero
-
-            withUnsafeMutableBytes(of: &bigEndian) {
-                $0.baseAddress!.advanced(by: offset).copyMemory(from: source, byteCount: length)
-            }
-
-            return T.init(bigEndian: bigEndian)
+            value = T.init(self.bytes[i]) | value << 8
         }
     }
 }
