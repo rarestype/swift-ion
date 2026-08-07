@@ -2,12 +2,12 @@
 
 set -euo pipefail
 
-mkdir -p artifacts
-OUTPUT_PATH="$(pwd)/artifacts/benchmark_results.md"
+timings='Benchmarks/.timings'
 
+mkdir -p "$timings"
 swift package \
     --package-path Benchmarks \
     --allow-writing-to-package-directory \
     benchmark \
     --no-progress \
-    --format markdown > "$OUTPUT_PATH"
+    --format markdown > "${timings}/benchmark_results.md"
