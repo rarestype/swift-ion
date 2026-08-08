@@ -1,4 +1,5 @@
 internal import Grammar
+import IonABI
 
 extension AST.NodeRule {
     enum Nonfinite: ParsingRule {
@@ -8,30 +9,23 @@ extension AST.NodeRule {
             _ input: inout ParsingInput<some ParsingDiagnostics<Source>>
         ) throws(PatternMatchingError) -> AST.Number
             where Source.Element == Terminal, Source.Index == Location {
-
             if  let _: Void = input.parse(
                     as: UnicodeEncoding<Location, UInt8>.LowercaseS?.self
                 ) {
                 try input.parse(as: AST.NodeRule<Location>.NaN.self)
-                // return .snan
-                return .unimplemented
+                return .float(.float32(.signalingNaN))
             } else if
                 let _: Void = input.parse(as: AST.NodeRule<Location>.NaN?.self) {
-                // return .nan
-                return .unimplemented
+                return .float(.float32(.nan))
             }
 
-            let sign: FloatingPointSign
-            if  let _: Void = input.parse(as: UnicodeEncoding<Location, UInt8>.Hyphen?.self) {
-                sign = .minus
-            } else {
-                sign = .plus
-            }
-
+            let sign: Ion.Sign? = input.parse(as: AST.NumberRule<Location>.PlusOrMinus?.self)
             try input.parse(as: Inf.self)
-            // return .infinity(sign)
-            _ = sign
-            return .unimplemented
+            if  case .negative? = sign {
+                return .float(.float32(-.infinity))
+            } else {
+                return .float(.float32(+.infinity))
+            }
         }
     }
 }

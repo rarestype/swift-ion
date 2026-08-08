@@ -3,22 +3,6 @@ import IonABI
 
 extension AST {
     /// Matches a numeric literal.
-    ///
-    /// Numeric literals are always written in decimal.
-    ///
-    /// The following examples are all valid literals:
-    /**
-    ```swift
-    "5"
-    "5.5"
-    "-5.5"
-    "-55e-2"
-    "-55e2"
-    "-55e+2"
-    ```
-    */
-    /// Numeric literals may not begin with a prefix `+` sign, although the
-    /// exponent field can use a prefix `+`.
     enum NumberRule<Location> {}
 }
 extension AST.NumberRule: ParsingRule {
@@ -29,8 +13,7 @@ extension AST.NumberRule: ParsingRule {
     ) throws(PatternMatchingError) -> AST.Number
         where Source.Element == Terminal, Source.Index == Location {
         /// ASCII decimal digit terminals.
-        typealias DecimalDigit<T> = UnicodeDigit<Location, UInt8, T>.Decimal
-            where T: BinaryInteger
+        typealias DecimalDigit<T> = UnicodeDigit<Location, UInt8, T>.Decimal where T: BinaryInteger
         /// ASCII terminals.
         typealias ASCII = UnicodeEncoding<Location, UInt8>
 
@@ -38,106 +21,166 @@ extension AST.NumberRule: ParsingRule {
         let sign: Ion.Sign? = input.parse(as: PlusOrMinus?.self)
 
         /// parse integral component
-        var units: UInt64? = try input.parse(as: DecimalDigit<UInt64>.self)
-        while let remainder: UInt64 = input.parse(as: DecimalDigit<UInt64>?.self) {
-            guard
-            let value: UInt64 = units else {
-                continue
-            }
-            if  case (let shifted, false) = value.multipliedReportingOverflow(by: 10),
-                case (let refined, false) = shifted.addingReportingOverflow(remainder) {
-                units = refined
-            } else {
-                units = nil
-            }
+        let first: UInt64 = try input.parse(as: DecimalDigit<UInt64>.self)
+        let radix: Ion.IntegerNotation? = input.parse(as: Notation?.self)
+        var units: Ion.IntegerAccumulator = .uint64(first)
+        switch radix {
+        case .b?:
+            repeat {} while units.parse(
+                digit: UnicodeDigit<Location, UInt8, UInt64>.Binary.self,
+                input: &input
+            )
+        case nil:
+            repeat {} while units.parse(
+                digit: UnicodeDigit<Location, UInt8, UInt64>.Decimal.self,
+                input: &input
+            )
+        case .x?:
+            repeat {} while units.parse(
+                digit: UnicodeDigit<Location, UInt8, UInt64>.Hex.self,
+                input: &input
+            )
         }
 
-        /// parse fractional component, if present
         var places: UInt32 = 0
-        if  var (_, remainder): (Void, UInt64) = try? input.parse(
-                as: (ASCII.Period, DecimalDigit<UInt64>).self
-            ) {
-            while true {
-                places += 1
+        var period: Bool = false
+        if  case nil = radix {
+            /// parse fractional component, if present
+            if  case ()? = input.parse(as: ASCII.Period?.self) {
+                period = true
+                // unlike json, ion allows the decimal point to have no trailing digits
+                while let remainder: UInt64 = input.parse(as: DecimalDigit<UInt64>?.self) {
+                    places += 1
+                    units.shift(adding: remainder)
+                }
+            }
 
-                if  let value: UInt64 = units {
-                    if  case (let shifted, false) = value.multipliedReportingOverflow(by: 10),
-                        case (let refined, false) = shifted.addingReportingOverflow(remainder) {
-                        units = refined
+            switch input.parse(as: Exponent?.self) {
+            case .e?:
+                // to parse floats, we take the sanitized string representation and parse with
+                // the standard library API
+                let _: Ion.Sign? = input.parse(as: PlusOrMinus?.self)
+                while case _? = input.parse(as: DecimalDigit<UInt64>?.self) {}
+
+                let bytes: Int = input.source.distance(from: start, to: input.index)
+                let value: String = .init(unsafeUninitializedCapacity: bytes) {
+                    var i: Int = $0.startIndex
+                    // filter out underscores
+                    for utf8: UInt8 in input[start ..< input.index] where utf8 != 0x5f {
+                        $0[i] = utf8
+                        i = $0.index(after: i)
+                    }
+                    return $0.distance(from: $0.startIndex, to: i)
+                }
+
+                guard let value: Double = .init(value) else {
+                    return .unrepresentable(value)
+                }
+                if  let value: Float = .init(exactly: value) {
+                    return .float(.float32(value))
+                } else {
+                    return .float(.float64(value))
+                }
+
+            case .d?:
+                period = true
+
+                let exponent: (sign: Ion.Sign, magnitude: UInt32)
+
+                exponent.sign = input.parse(as: PlusOrMinus?.self) ?? .positive
+                exponent.magnitude = try input.parse(
+                    as: Pattern.UnsignedInteger<DecimalDigit<UInt32>>.self
+                )
+
+                if  exponent.magnitude == 0 {
+                    break
+                }
+
+                switch exponent.sign {
+                case .negative:
+                    // note: potential crash if `exponent.magnitude` is absurdly large
+                    places += exponent.magnitude
+
+                case .positive:
+                    guard places < exponent.magnitude else {
+                        // note: see above
+                        places -= exponent.magnitude
+                        break
+                    }
+
+                    let shift: Int
+                    if  case .uint64(0) = units {
+                        places = 0
+                        break
                     } else {
-                        units = nil
+                        shift = Int.init(exponent.magnitude - places)
+                        places = 0
+                    }
+
+                    if  shift < AST.Number.Exp10.endIndex {
+                        units.multiply(by: AST.Number.Exp10[shift])
+                    } else {
+                        units = .unrepresentable
                     }
                 }
 
-                guard
-                let next: UInt64 = input.parse(as: DecimalDigit<UInt64>?.self) else {
-                    break
-                }
-
-                remainder = next
+            case nil:
+                break
             }
-        }
-
-        let exponent: (sign: Ion.Sign, magnitude: UInt32)?
-        if  let _: Void = input.parse(as: ASCII.E?.self) {
-            let sign: Ion.Sign? = input.parse(as: PlusOrMinus?.self)
-            let magnitude: UInt32 = try input.parse(
-                as: Pattern.UnsignedInteger<DecimalDigit<UInt32>>.self
-            )
-
-            exponent = magnitude > 0 ? (sign: sign ?? .positive, magnitude: magnitude) : nil
-        } else {
-            exponent = nil
         }
 
         representable:
-        if  let exponent: (sign: Ion.Sign, magnitude: UInt32),
-            var units: UInt64 {
-            switch exponent.sign {
-            case .negative:
-                // note: potential crash if `exponent.magnitude` is absurdly large
-                places += exponent.magnitude
+        if  period {
+            let coefficient: Ion.Coefficient
 
-            case .positive:
-                guard places < exponent.magnitude else {
-                    // note: see above
-                    places -= exponent.magnitude
-                    break
-                }
-
-                let shift: Int
-                if  units == 0 {
-                    places = 0
-                    break
+            switch units {
+            case .uint64(let units):
+                if  case .negative? = sign {
+                    if  units <= UInt64.init(bitPattern: Int64.min) {
+                        coefficient = .int64(Int64.init(bitPattern: 0 &- units))
+                    } else {
+                        coefficient = .int128(Int128.init(units))
+                    }
                 } else {
-                    shift = .init(exponent.magnitude - places)
-                    places = 0
+                    if  let units: Int64 = .init(exactly: units) {
+                        coefficient = .int64(units)
+                    } else {
+                        coefficient = .int128(Int128.init(units))
+                    }
                 }
-
-                if  shift < AST.Number.Exp10.endIndex,
-                    case (let shifted, false) = units.multipliedReportingOverflow(
-                        by: AST.Number.Exp10[shift]
-                    ) {
-                    units = shifted
+            case .uint128(let units):
+                if  case .negative? = sign {
+                    if  units <= UInt128.init(bitPattern: Int128.min) {
+                        coefficient = .int128(Int128.init(bitPattern: 0 &- units))
+                    } else {
+                        break representable
+                    }
                 } else {
-                    break representable
+                    if  let units: Int128 = .init(exactly: units) {
+                        coefficient = .int128(units)
+                    } else {
+                        break representable
+                    }
                 }
+            case .unrepresentable:
+                break representable
             }
 
-            // return .inline(.init(sign: sign, units: units, places: places))
-            _ = (sign, units, places)
-            return .unimplemented
-        } else if
-            let units: UInt64 {
-            // return .inline(.init(sign: sign, units: units, places: places))
-            _ = (sign, units, places)
-            return .unimplemented
+            return .decimal(.init(coefficient, e: -Int.init(places)))
+        } else {
+            switch units {
+            case .uint64(let units):
+                return .int(sign ?? .positive, .uint64(units))
+            case .uint128(let units):
+                return .int(sign ?? .positive, .uint128(units))
+            case .unrepresentable:
+                break representable
+            }
         }
 
         /// number is not representable in efficient format, fall back to string
-        let end: Location = input.index
-        // return .fallback(String.init(decoding: input[start ..< end], as: Unicode.UTF8.self))
-        _ = (start, end)
-        return .unimplemented
+        return .unrepresentable(
+            String.init(decoding: input[start ..< input.index], as: Unicode.UTF8.self)
+        )
     }
 }
