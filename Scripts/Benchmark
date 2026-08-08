@@ -9,5 +9,6 @@ swift package \
     --package-path Benchmarks \
     --allow-writing-to-package-directory \
     benchmark \
+    --filter '.*/Document' \
     --no-progress \
     --format markdown > "${timings}/benchmark_results.md"
