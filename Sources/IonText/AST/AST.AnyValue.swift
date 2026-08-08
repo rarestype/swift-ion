@@ -8,12 +8,12 @@ extension AST {
         case float(Ion.FloatRepresentation)
         case decimal(Ion.DecimalRepresentation)
         case timestamp(Ion.Timestamp)
-        case symbol(SymbolKey)
+        case symbol(Symbol)
         case string(String)
         case clob([UInt8])
         case blob([UInt8])
         case list([Node])
         case sexp([Node])
-        case `struct`([(key: SymbolKey, value: Node)])
+        case `struct`([(key: Symbol, value: Node)])
     }
 }

@@ -13,13 +13,13 @@ extension AST.NodeRule.Object: ParsingRule {
 
     static func parse<Source>(
         _ input: inout ParsingInput<some ParsingDiagnostics<Source>>
-    ) throws(PatternMatchingError) -> [(key: AST.SymbolKey, value: AST.Node)]
+    ) throws(PatternMatchingError) -> [(key: AST.Symbol, value: AST.Node)]
         where Source.Index == Location, Source.Element == Terminal {
         try input.parse(as: AST.BraceLeftRule<Location>.self)
-        var items: [(key: AST.SymbolKey, value: AST.Node)]
-        if  let head: (key: AST.SymbolKey, value: AST.Node) = try? input.parse(as: Item.self) {
+        var items: [(key: AST.Symbol, value: AST.Node)]
+        if  let head: (key: AST.Symbol, value: AST.Node) = try? input.parse(as: Item.self) {
             items = [head]
-            while let (_, next): (Void, (key: AST.SymbolKey, value: AST.Node)) = try? input.parse(
+            while let (_, next): (Void, (key: AST.Symbol, value: AST.Node)) = try? input.parse(
                     as: (AST.CommaRule<Location>, Item).self
                 ) {
                 items.append(next)

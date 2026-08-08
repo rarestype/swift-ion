@@ -49,7 +49,7 @@ extension AST.RootRule: ParsingRule {
     ) throws(PatternMatchingError) -> AST.Node
         where Source.Element == Terminal, Source.Index == Location {
         let value: AST.AnyValue
-        if  let items: [(AST.SymbolKey, AST.Node)] = input.parse(
+        if  let items: [(AST.Symbol, AST.Node)] = input.parse(
                 as: AST.NodeRule<Location>.Object?.self
             ) {
             value = .struct(items)

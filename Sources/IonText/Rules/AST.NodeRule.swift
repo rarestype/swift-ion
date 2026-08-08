@@ -31,7 +31,7 @@ extension AST.NodeRule: ParsingRule {
             let string: String = input.parse(as: AST.StringRule<Location>?.self) {
             value = .string(string)
         } else if
-            let items: [(AST.SymbolKey, AST.Node)] = input.parse(as: Object?.self) {
+            let items: [(AST.Symbol, AST.Node)] = input.parse(as: Object?.self) {
             value = .struct(items)
         } else if
             let elements: [AST.Node] = input.parse(as: Array?.self) {
