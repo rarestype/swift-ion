@@ -66,7 +66,7 @@ extension Ion.AnyValue {
         }
     }
 
-    @inlinable static func null(type: Ion.AnyType) -> Self {
+    @inlinable public static func null(type: Ion.AnyType) -> Self {
         switch type {
         case .null: .null
         case .bool: .bool(nil)
