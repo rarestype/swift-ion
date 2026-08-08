@@ -35,6 +35,5 @@ extension Ion.Coefficient.Words {
 
             value = T.init(self.bytes[i]) | value << 8
         }
-        // todo: check for overflow
     }
 }

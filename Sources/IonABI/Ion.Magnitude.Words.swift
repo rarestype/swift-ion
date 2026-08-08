@@ -19,8 +19,13 @@ extension Ion.Magnitude.Words: RandomAccessCollection {
     }
 }
 extension Ion.Magnitude.Words {
-    @usableFromInline func load<T>(into _: T.Type = T.self) -> T where T: UnsignedInteger {
-        /// todo: benchmark zero-init and big-endian memory copy
+    @inlinable var trimmed: Self { .init(bytes: self.bytes.drop { $0 == 0 }) }
+}
+extension Ion.Magnitude.Words {
+    @inlinable public func load<T>(into _: T.Type = T.self) -> T where T: UnsignedInteger {
+        // this is an iterative algorithm that pushes bytes one by one to `T`. it was intended
+        // to be used with a custom bigint receiver type, but benchmarks indicate it is also
+        // faster than an “optimized” raw memory-copying approach for fixed-width integer types.
         if  self.bytes.isEmpty {
             return .zero
         }

@@ -12,8 +12,12 @@ extension FixedWidthInteger where Self: SignedInteger {
             }
             self = value
         case .arbitrary(let words):
-            let value: (negative: Bool, magnitude: Magnitude) = words.load()
-            self.init(exactly: value)
+            // signed bigint cannot be trimmed without losing the sign bit
+            if  words.bytes.count > MemoryLayout<Magnitude>.size {
+                return nil
+            }
+
+            self.init(exactly: words.load())
         }
     }
 }
@@ -44,12 +48,12 @@ extension FixedWidthInteger {
         case .uint128(let magnitude):
             self.init(exactly: magnitude)
         case .arbitrary(let words):
-            let trimmed: ArraySlice<UInt8> = words.bytes.drop { $0 == 0 }
-            if  trimmed.count > MemoryLayout<Self.Magnitude>.size {
+            let trimmed: Ion.Magnitude.Words = words.trimmed
+            if  trimmed.bytes.count > MemoryLayout<Magnitude>.size {
                 return nil
             }
 
-            self.init(exactly: words.load(into: Self.Magnitude.self))
+            self.init(exactly: trimmed.load(into: Magnitude.self))
         }
     }
 }
