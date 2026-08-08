@@ -7,24 +7,24 @@ extension AST.NodeRule {
 
         static func parse<Source>(
             _ input: inout ParsingInput<some ParsingDiagnostics<Source>>
-        ) throws(PatternMatchingError) -> AST.Number
+        ) throws(PatternMatchingError) -> Float
             where Source.Element == Terminal, Source.Index == Location {
             if  let _: Void = input.parse(
                     as: UnicodeEncoding<Location, UInt8>.LowercaseS?.self
                 ) {
                 try input.parse(as: AST.NodeRule<Location>.NaN.self)
-                return .float(.float32(.signalingNaN))
+                return .signalingNaN
             } else if
                 let _: Void = input.parse(as: AST.NodeRule<Location>.NaN?.self) {
-                return .float(.float32(.nan))
+                return .nan
             }
 
             let sign: Ion.Sign? = input.parse(as: AST.NumberRule<Location>.PlusOrMinus?.self)
             try input.parse(as: Inf.self)
             if  case .negative? = sign {
-                return .float(.float32(-.infinity))
+                return -.infinity
             } else {
-                return .float(.float32(+.infinity))
+                return +.infinity
             }
         }
     }

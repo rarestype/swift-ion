@@ -17,8 +17,3 @@ extension AST {
         case `struct`([(key: SymbolKey, value: Node)])
     }
 }
-extension AST.AnyValue {
-    static func number(_ number: AST.Number) -> Self {
-        fatalError("unimplemented")
-    }
-}

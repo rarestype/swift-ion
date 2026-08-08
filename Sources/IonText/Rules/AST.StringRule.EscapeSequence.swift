@@ -1,4 +1,5 @@
 internal import Grammar
+import IonABI
 
 extension AST.StringRule {
     /// Matches a sequence of escaped UTF-16 code units.
@@ -33,7 +34,7 @@ extension AST.StringRule.EscapeSequence: ParsingRule {
                 if  let scalar: Unicode.Scalar = Unicode.Scalar.init(value) {
                     unescaped.append(Character.init(scalar))
                 } else {
-                    throw .arbitrary(AST.InvalidUnicodeScalarError.init(value: value))
+                    throw .arbitrary(Ion.InvalidUnicodeScalarError.init(value: value))
                 }
             }
 

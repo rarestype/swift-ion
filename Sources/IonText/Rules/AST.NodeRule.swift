@@ -17,7 +17,16 @@ extension AST.NodeRule: ParsingRule {
         where Source.Element == Terminal, Source.Index == Location {
         let value: AST.AnyValue
         if  let number: AST.Number = input.parse(as: AST.NumberRule<Location>?.self) {
-            value = .number(number)
+            switch number {
+            case .decimal(let number):
+                value = .decimal(number)
+            case .float(let number):
+                value = .float(number)
+            case .int(let sign, let magnitude):
+                value = .int(sign, magnitude)
+            case .unrepresentable(let string):
+                throw .arbitrary(Ion.InvalidNumberError.unsupported(string))
+            }
         } else if
             let string: String = input.parse(as: AST.StringRule<Location>?.self) {
             value = .string(string)
@@ -34,8 +43,8 @@ extension AST.NodeRule: ParsingRule {
             let _: Void = input.parse(as: False?.self) {
             value = .bool(false)
         } else if
-            let number: AST.Number = input.parse(as: AST.NodeRule<Location>.Nonfinite?.self) {
-            value = .number(number)
+            let float: Float = input.parse(as: AST.NodeRule<Location>.Nonfinite?.self) {
+            value = .float(.float32(float))
         } else {
             try input.parse(as: Null.self)
             value = .null(.null)
