@@ -5,6 +5,15 @@ extension AST {
     /// Matches a numeric literal.
     enum NumberRule<Location> {}
 }
+extension AST.NumberRule {
+    private typealias DecimalDigit<Value> = UnicodeDigit<
+        Location,
+        UInt8,
+        Value
+    >.Decimal where Value: BinaryInteger
+    /// ASCII terminals.
+    private typealias ASCII = UnicodeEncoding<Location, UInt8>
+}
 extension AST.NumberRule: ParsingRule {
     typealias Terminal = UInt8
 
@@ -12,10 +21,6 @@ extension AST.NumberRule: ParsingRule {
         _ input: inout ParsingInput<some ParsingDiagnostics<Source>>
     ) throws(PatternMatchingError) -> AST.Number
         where Source.Element == Terminal, Source.Index == Location {
-        /// ASCII decimal digit terminals.
-        typealias DecimalDigit<T> = UnicodeDigit<Location, UInt8, T>.Decimal where T: BinaryInteger
-        /// ASCII terminals.
-        typealias ASCII = UnicodeEncoding<Location, UInt8>
 
         let start: Source.Index = input.index
         let sign: Ion.Sign? = input.parse(as: PlusOrMinus?.self)
