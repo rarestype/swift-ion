@@ -12,9 +12,7 @@ extension Ion {
     }
 }
 extension Ion.StructCursor: Ion.Decoder {
-    @inlinable static func acquire(
-        context: consuming Ion.NodeDecoder,
-    ) throws -> Self {
+    @inlinable static func acquire(context: consuming Ion.NodeDecoder) throws -> Self {
         let structure: Ion.Struct = try .init(ion: context)
         return .init(table: context.table, input: structure.fields)
     }

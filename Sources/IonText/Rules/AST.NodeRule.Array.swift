@@ -12,7 +12,7 @@ extension AST.NodeRule.Array: ParsingRule {
 
     static func parse<Source>(
         _ input: inout ParsingInput<some ParsingDiagnostics<Source>>
-    ) throws(PatternMatchingError) -> [AST.Node]
+    ) throws(PatternMatchingError) -> AST.List
         where Source.Element == Terminal, Source.Index == Location {
         try input.parse(as: AST.BracketLeftRule<Location>.self)
         var elements: [AST.Node]
@@ -27,6 +27,6 @@ extension AST.NodeRule.Array: ParsingRule {
             elements = []
         }
         try input.parse(as: AST.BracketRightRule<Location>.self)
-        return elements
+        return .init(elements: elements)
     }
 }

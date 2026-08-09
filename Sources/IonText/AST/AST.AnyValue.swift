@@ -12,8 +12,8 @@ extension AST {
         case string(String)
         case clob(Ion.BlobView<[UInt8], Ion.ClobType>?)
         case blob(Ion.BlobView<[UInt8], Ion.BlobType>?)
-        case list([Node])
-        case sexp([Node])
+        case list(List)
+        case sexp(Sexp)
         case `struct`(Struct)
     }
 }
@@ -56,8 +56,8 @@ extension AST.AnyValue: IonEncodable {
         case .list(let self):
             self.encode(to: &ion)
 
-        case .sexp(_):
-            fatalError("unimplemented")
+        case .sexp(let self):
+            self.encode(to: &ion)
 
         case .struct(let self):
             self.encode(to: &ion)

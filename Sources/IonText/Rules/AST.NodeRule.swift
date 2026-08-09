@@ -34,8 +34,8 @@ extension AST.NodeRule: ParsingRule {
             let `struct`: AST.Struct = input.parse(as: Object?.self) {
             value = .struct(`struct`)
         } else if
-            let elements: [AST.Node] = input.parse(as: Array?.self) {
-            value = .list(elements)
+            let list: AST.List = input.parse(as: Array?.self) {
+            value = .list(list)
         } else if
             let _: Void = input.parse(as: True?.self) {
             value = .bool(true)
