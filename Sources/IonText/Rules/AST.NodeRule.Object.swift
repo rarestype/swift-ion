@@ -13,7 +13,7 @@ extension AST.NodeRule.Object: ParsingRule {
 
     static func parse<Source>(
         _ input: inout ParsingInput<some ParsingDiagnostics<Source>>
-    ) throws(PatternMatchingError) -> [(key: AST.Symbol, value: AST.Node)]
+    ) throws(PatternMatchingError) -> AST.Struct
         where Source.Index == Location, Source.Element == Terminal {
         try input.parse(as: AST.BraceLeftRule<Location>.self)
         var items: [(key: AST.Symbol, value: AST.Node)]
@@ -28,6 +28,6 @@ extension AST.NodeRule.Object: ParsingRule {
             items = []
         }
         try input.parse(as: AST.BraceRightRule<Location>.self)
-        return items
+        return .init(fields: items)
     }
 }

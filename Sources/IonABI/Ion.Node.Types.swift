@@ -5,7 +5,7 @@ extension Ion.Node {
         @usableFromInline var first: Ion.Symbol.ID
         @usableFromInline var extra: [Ion.Symbol.ID]
 
-        @inlinable init(first: Ion.Symbol.ID, extra: [Ion.Symbol.ID] = []) {
+        @inlinable public init(first: Ion.Symbol.ID, extra: [Ion.Symbol.ID] = []) {
             self.first = first
             self.extra = extra
         }

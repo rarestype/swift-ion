@@ -1,7 +1,7 @@
 internal import Bijection
 
 extension Ion.SymbolTable.Import {
-    @frozen @usableFromInline enum CodingKey {
+    @frozen @usableFromInline enum CodingKey: IonSymbolizable {
         case name
         case version
         case max_id
@@ -16,7 +16,7 @@ extension Ion.SymbolTable.Import.CodingKey: Identifiable {
         }
     }
 }
-extension Ion.SymbolTable.Import.CodingKey: IonSymbolizable {
+extension Ion.SymbolTable.Import.CodingKey: Ion.SymbolConvertible {
     @inlinable var symbol: Ion.Symbol {
         switch self {
         case .name: .name

@@ -1,4 +1,5 @@
 internal import Grammar
+import IonABI
 
 extension AST.NodeRule.Object {
     /// Matches an key-value expression.
@@ -19,6 +20,6 @@ extension AST.NodeRule.Object.Item: ParsingRule {
         let key: String = try input.parse(as: AST.StringRule<Location>.self)
         try input.parse(as: AST.ColonRule<Location>.self)
         let value: AST.Node = try input.parse(as: AST.NodeRule<Location>.self)
-        return (.name(key), value)
+        return (.name(Ion.Symbol.init(key)), value)
     }
 }

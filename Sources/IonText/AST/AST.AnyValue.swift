@@ -10,10 +10,57 @@ extension AST {
         case timestamp(Ion.Timestamp)
         case symbol(Symbol)
         case string(String)
-        case clob([UInt8])
-        case blob([UInt8])
+        case clob(Ion.BlobView<[UInt8], Ion.ClobType>?)
+        case blob(Ion.BlobView<[UInt8], Ion.BlobType>?)
         case list([Node])
         case sexp([Node])
-        case `struct`([(key: Symbol, value: Node)])
+        case `struct`(Struct)
+    }
+}
+extension AST.AnyValue: IonEncodable {
+    func encode(to ion: inout Ion.NodeEncoder) {
+        switch self {
+        case .null(let self):
+            Ion.AnyValue.null(type: self).encode(to: &ion)
+
+        case .bool(let self):
+            self.encode(to: &ion)
+
+        case .int(let sign, let magnitude):
+            Ion.AnyValue.int(sign, magnitude).encode(to: &ion)
+
+        case .float(let self):
+            self.encode(to: &ion)
+
+        case .decimal(let self):
+            self.encode(to: &ion)
+
+        case .timestamp(let self):
+            self.encode(to: &ion)
+
+        case .symbol(.preassigned(let self)):
+            self.encode(to: &ion)
+
+        case .symbol(.name(let self)):
+            ion.symbol[self].encode(to: &ion)
+
+        case .string(let self):
+            self.encode(to: &ion)
+
+        case .clob(let self):
+            self.encode(to: &ion)
+
+        case .blob(let self):
+            self.encode(to: &ion)
+
+        case .list(let self):
+            self.encode(to: &ion)
+
+        case .sexp(_):
+            fatalError("unimplemented")
+
+        case .struct(let self):
+            self.encode(to: &ion)
+        }
     }
 }

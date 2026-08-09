@@ -53,10 +53,10 @@ extension Ion.SymbolDecoder {
     }
 }
 extension Ion.SymbolDecoder {
-    @inlinable subscript(symbol: Ion.Symbol) -> Ion.Symbol.ID? {
+    @inlinable public subscript(symbol: Ion.Symbol) -> Ion.Symbol.ID? {
         self.reverse[symbol]
     }
-    @inlinable subscript(id: Ion.Symbol.ID) -> Ion.Symbol? {
+    @inlinable public subscript(id: Ion.Symbol.ID) -> Ion.Symbol? {
         if  let symbol: Ion.Symbol = id.system {
             return symbol
         }
