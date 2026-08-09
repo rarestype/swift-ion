@@ -5,13 +5,3 @@ extension Ion {
         case arbitrary(Words)
     }
 }
-extension Ion.Magnitude: Ion.NullGroup {
-    @inlinable public static var null: Ion.AnyType { .int(.positive) }
-    @inlinable public static func inhabits(null: Ion.AnyType) -> Bool {
-        switch null {
-        case .null: true
-        case .int: true
-        default: false
-        }
-    }
-}

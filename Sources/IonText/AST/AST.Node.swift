@@ -2,7 +2,7 @@ internal import Grammar
 import IonABI
 
 extension AST {
-    struct Node: Sendable {
+    struct Node {
         var types: Types?
         var value: AnyValue
 
@@ -20,7 +20,7 @@ extension AST.Node: IonEncodable {
                 extra: types.extra.map { $0.set(in: &ion.symbol) }
             )
 
-            ion._wrap(as: types, with: self.value.encode(to:))
+            ion.wrap(as: types, with: self.value.encode(to:))
         } else {
             self.value.encode(to: &ion)
         }

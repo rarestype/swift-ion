@@ -1,7 +1,7 @@
 import IonABI
 
 extension AST {
-    enum AnyValue: Sendable {
+    enum AnyValue {
         case null(Ion.AnyType)
         case bool(Bool)
         case int(Ion.Sign, Ion.Magnitude)
@@ -27,7 +27,7 @@ extension AST.AnyValue: IonEncodable {
             self.encode(to: &ion)
 
         case .int(let sign, let magnitude):
-            Ion.AnyValue.int(sign, magnitude).encode(to: &ion)
+            Ion.IntegerRepresentation.init(sign: sign, magnitude: magnitude).encode(to: &ion)
 
         case .float(let self):
             self.encode(to: &ion)

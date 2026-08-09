@@ -1,7 +1,7 @@
 import IonABI
 
 extension AST {
-    enum Symbol: Equatable, Hashable, Sendable {
+    enum Symbol {
         case name(Ion.Symbol)
         case preassigned(Ion.Symbol.ID)
     }

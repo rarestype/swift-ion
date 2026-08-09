@@ -1,7 +1,7 @@
 import IonABI
 
 extension AST {
-    struct List: Sendable {
+    struct List {
         let elements: [Node]
     }
 }

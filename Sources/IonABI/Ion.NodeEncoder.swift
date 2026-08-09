@@ -15,7 +15,14 @@ extension Ion.NodeEncoder {
     }
 }
 extension Ion.NodeEncoder {
-    @inline(always) @inlinable public mutating func _wrap<T, E>(
+    @inline(always) @inlinable public mutating func wrap<T, E>(
+        type: Ion.Symbol.ID,
+        with encode: (inout Self) throws(E) -> T
+    ) throws(E) -> T where T: ~Copyable {
+        try self.wrap(as: .init(first: type), with: encode)
+    }
+
+    @inline(always) @inlinable public mutating func wrap<T, E>(
         as types: Ion.Node.Types,
         with encode: (inout Self) throws(E) -> T
     ) throws(E) -> T where T: ~Copyable {
@@ -33,7 +40,8 @@ extension Ion.NodeEncoder {
             }
         } (&self.table, &self.output[types: types])
     }
-
+}
+extension Ion.NodeEncoder {
     @inline(always) @inlinable mutating func bind<T, E, Encoder>(
         to _: Encoder.Type = Encoder.self,
         with encode: (inout Encoder) throws(E) -> T

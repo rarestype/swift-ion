@@ -1,5 +1,5 @@
 extension AST.Node {
-    struct Types: Equatable, Sendable {
+    struct Types {
         var first: AST.Symbol
         var extra: [AST.Symbol]
 

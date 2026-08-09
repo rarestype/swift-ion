@@ -1,7 +1,7 @@
 import IonABI
 
 extension AST {
-    struct Sexp: Sendable {
+    struct Sexp {
         let elements: [Node]
     }
 }

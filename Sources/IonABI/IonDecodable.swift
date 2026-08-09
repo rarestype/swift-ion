@@ -16,7 +16,7 @@ extension IonDecodable where Self: BinaryFloatingPoint {
     public typealias NullGroup = Ion.FloatRepresentation
 }
 extension IonDecodable where Self: BinaryInteger {
-    public typealias NullGroup = Ion.Magnitude
+    public typealias NullGroup = Ion.IntegerRepresentation
 }
 extension IonDecodable where Self: FixedWidthInteger {
     @inlinable public init(ion: borrowing Ion.NodeDecoder) throws {
