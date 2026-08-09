@@ -1,3 +1,4 @@
+internal import Grammar
 import IonABI
 
 extension AST {
@@ -23,5 +24,16 @@ extension AST.Node: IonEncodable {
         } else {
             self.value.encode(to: &ion)
         }
+    }
+}
+extension AST.Node {
+    init(parsing span: borrowing RawSpan) throws(PatternMatchingError) {
+        self = try span.withUnsafeBytes(AST.NodeRule<Int>.parse(_:))
+    }
+    init(parsing string: borrowing String) throws(PatternMatchingError) {
+        self = try AST.NodeRule<String.Index>.parse(string.utf8)
+    }
+    init(parsing string: borrowing Substring) throws(PatternMatchingError) {
+        self = try AST.NodeRule<String.Index>.parse(string.utf8)
     }
 }
