@@ -15,9 +15,7 @@ extension Ion {
     }
 }
 extension Ion.StructDecoder: Ion.Decoder {
-    @inlinable static func acquire(
-        context: consuming Ion.NodeDecoder,
-    ) throws -> Self {
+    @inlinable static func acquire(context: consuming Ion.NodeDecoder) throws -> Self {
         let structure: Ion.Struct = try .init(ion: context)
         return .init(table: context.table, index: try structure.parsed)
     }

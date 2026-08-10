@@ -66,7 +66,7 @@ extension Ion.AnyValue {
         }
     }
 
-    @inlinable static func null(type: Ion.AnyType) -> Self {
+    @inlinable public static func null(type: Ion.AnyType) -> Self {
         switch type {
         case .null: .null
         case .bool: .bool(nil)
@@ -215,32 +215,16 @@ extension Ion.AnyValue: IonEncodable {
         case .null:
             ion.output[null: .null]
 
-        case .int(let sign, nil):
-            ion.output[null: .int(sign)]
+        case .int(let sign, let magnitude):
+            let value: Ion.IntegerRepresentation?
 
-        case .int(let sign, .uint64(0)?):
-            ion.output[type: .int(sign), size: 0]
-
-        case .int(let sign, .uint64(let self)?):
-            let size: Int = self.bytesSpanned
-            ion.output[type: .int(sign), size: size]
-            ion.output.write(fixed: self, octets: size)
-
-        case .int(let sign, .uint128(0)?):
-            ion.output[type: .int(sign), size: 0]
-
-        case .int(let sign, .uint128(let self)?):
-            let size: Int = self.bytesSpanned
-            ion.output[type: .int(sign), size: size]
-            ion.output.write(fixed: self, octets: size)
-
-        case .int(let sign, .arbitrary(let words)?):
-            if  words.bytes.allSatisfy({ $0 == 0 }) {
-                ion.output[type: .int(sign), size: 0]
+            if  let magnitude: Ion.Magnitude {
+                value = .init(sign: sign, magnitude: magnitude)
             } else {
-                ion.output[type: .int(sign), size: words.bytes.count]
-                ion.output.append(words.bytes)
+                value = nil
             }
+
+            value.encode(to: &ion)
 
         case .bool(let self): self.encode(to: &ion)
         case .float(let self): self.encode(to: &ion)

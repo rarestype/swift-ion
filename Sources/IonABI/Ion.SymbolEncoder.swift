@@ -34,7 +34,7 @@ extension Ion.SymbolEncoder {
     }
 }
 extension Ion.SymbolEncoder {
-    @inlinable subscript(symbol: Ion.Symbol) -> Ion.Symbol.ID {
+    @inlinable public subscript(symbol: Ion.Symbol) -> Ion.Symbol.ID {
         mutating get {
             {
                 if  let id: Ion.Symbol.ID = $0 {

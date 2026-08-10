@@ -11,7 +11,7 @@ extension IonEncodable where Self: BinaryFloatingPoint {
     public typealias NullGroup = Ion.FloatRepresentation
 }
 extension IonEncodable where Self: BinaryInteger {
-    public typealias NullGroup = Ion.Magnitude
+    public typealias NullGroup = Ion.IntegerRepresentation
 }
 extension IonEncodable where Self: FixedWidthInteger {
     @inlinable public func encode(to ion: inout Ion.NodeEncoder) {

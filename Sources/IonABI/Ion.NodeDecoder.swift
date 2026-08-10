@@ -18,6 +18,10 @@ extension Ion.NodeDecoder {
     @inlinable init(table: consuming Ion.SymbolDecoder, node: Ion.Node) {
         self.init(table: table, value: node.value, types: node.types)
     }
+
+    @inline(always) @inlinable public var symbol: Ion.SymbolDecoder {
+        _read { yield self.table }
+    }
 }
 extension Ion.NodeDecoder {
     @inline(always) @inlinable func bind<Decoder, T>(

@@ -15,9 +15,7 @@ extension Ion {
     }
 }
 extension Ion.ListDecoder: Ion.Decoder {
-    @inlinable static func acquire(
-        context: consuming Ion.NodeDecoder,
-    ) throws -> Self {
+    @inlinable static func acquire(context: consuming Ion.NodeDecoder) throws -> Self {
         let list: Ion.List = try .init(ion: context)
         return .init(table: context.table, input: list.values)
     }
