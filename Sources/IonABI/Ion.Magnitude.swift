@@ -5,3 +5,8 @@ extension Ion {
         case arbitrary(Words)
     }
 }
+extension Ion.Magnitude: ExpressibleByIntegerLiteral {
+    @inlinable public init(integerLiteral: UInt64) {
+        self = .uint64(integerLiteral)
+    }
+}
