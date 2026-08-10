@@ -21,7 +21,7 @@ extension Ion.Coefficient.Words: RandomAccessCollection {
 extension Ion.Coefficient.Words {
     @inlinable public func load<T>(
         into _: T.Type = T.self
-    ) -> (negative: Bool, magnitude: T) where T: UnsignedInteger {
+    ) -> (sign: Ion.Sign, magnitude: T) where T: UnsignedInteger {
         // ion signed int uses signed-magnitude, not two’s complement
         var i: Int = self.bytes.startIndex
         let first: UInt8 = self.bytes[i]
@@ -30,7 +30,7 @@ extension Ion.Coefficient.Words {
             i = self.bytes.index(after: i)
 
             guard i < self.bytes.endIndex else {
-                return (negative: first & 0b1000_0000 != 0, value)
+                return (first & 0b1000_0000 == 0 ? .positive : .negative, value)
             }
 
             value = T.init(self.bytes[i]) | value << 8

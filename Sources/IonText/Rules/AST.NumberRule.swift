@@ -140,33 +140,11 @@ extension AST.NumberRule: ParsingRule {
 
             switch units {
             case .uint64(let units):
-                if  case .negative? = sign {
-                    if  units <= UInt64.init(bitPattern: Int64.min) {
-                        coefficient = .int64(Int64.init(bitPattern: 0 &- units))
-                    } else {
-                        coefficient = .int128(Int128.init(units))
-                    }
-                } else {
-                    if  let units: Int64 = .init(exactly: units) {
-                        coefficient = .int64(units)
-                    } else {
-                        coefficient = .int128(Int128.init(units))
-                    }
-                }
+                coefficient = .int64(sign ?? .positive, units)
+
             case .uint128(let units):
-                if  case .negative? = sign {
-                    if  units <= UInt128.init(bitPattern: Int128.min) {
-                        coefficient = .int128(Int128.init(bitPattern: 0 &- units))
-                    } else {
-                        break representable
-                    }
-                } else {
-                    if  let units: Int128 = .init(exactly: units) {
-                        coefficient = .int128(units)
-                    } else {
-                        break representable
-                    }
-                }
+                coefficient = .int128(sign ?? .positive, units)
+
             case .unrepresentable:
                 break representable
             }

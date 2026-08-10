@@ -399,7 +399,7 @@ import IonABI
     ) static func Timestamps(offset: Int16?, year: UInt16) throws {
         let date: Ion.Timestamp = .init(offset: offset, year: year)
         let time: Ion.Timestamp = .init(offset: offset, year: year) {
-            $0[2][14][9, 59][58][e: 1].coefficient = .int64(2)
+            $0[2][14][9, 59][58][e: 1].coefficient = 2
         }
 
         do {
@@ -420,13 +420,8 @@ import IonABI
             #expect(decoded[0][0][0, 0].time == (9, 59, 58))
             #expect(decoded[0][0][0, 0][0][e: 0].exponent == 1)
 
-            let coefficient: Int64?
-            if  case .int64(let int64)? = decoded[0][0][0, 0][0][e: 0].coefficient {
-                coefficient = int64
-            } else {
-                coefficient = nil
-            }
-            #expect(coefficient == 2)
+            let coefficient: Ion.Coefficient? = decoded[0][0][0, 0][0][e: 0].coefficient
+            #expect(coefficient.map(Int64.init(exactly:)) == 2)
         }
     }
 

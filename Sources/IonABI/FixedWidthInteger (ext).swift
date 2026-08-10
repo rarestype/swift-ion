@@ -1,26 +1,3 @@
-extension FixedWidthInteger where Self: SignedInteger {
-    @inlinable public init?(exactly coefficient: borrowing Ion.Coefficient) {
-        switch coefficient {
-        case .int64(let value):
-            guard let value: Self = .init(exactly: value) else {
-                return nil
-            }
-            self = value
-        case .int128(let value):
-            guard let value: Self = .init(exactly: value) else {
-                return nil
-            }
-            self = value
-        case .arbitrary(let words):
-            // signed bigint cannot be trimmed without losing the sign bit
-            if  words.bytes.count > MemoryLayout<Magnitude>.size {
-                return nil
-            }
-
-            self.init(exactly: words.load())
-        }
-    }
-}
 extension FixedWidthInteger {
     @inlinable public init?(exactly: __shared (Ion.Sign, Ion.Magnitude)) {
         switch exactly {
@@ -58,16 +35,52 @@ extension FixedWidthInteger {
     }
 }
 extension FixedWidthInteger where Self: SignedInteger {
-    @inlinable init?(exactly: (negative: Bool, magnitude: Magnitude)) {
+    @inlinable init?(exactly: (sign: Ion.Sign, magnitude: Magnitude)) {
         switch exactly {
-        case (negative: true, magnitude: let magnitude):
+        case (.negative, let magnitude):
             if  Self.min.magnitude < magnitude {
                 return nil
             }
             self.init(truncatingIfNeeded: 0 &- magnitude)
 
-        case (negative: false, magnitude: let magnitude):
+        case (.positive, let magnitude):
             self.init(exactly: magnitude)
+        }
+    }
+
+    @inlinable public init?(exactly coefficient: borrowing Ion.Coefficient) {
+        switch coefficient {
+        case .int64(.positive, let magnitude):
+            self.init(exactly: magnitude)
+
+        case .int64(.negative, let magnitude):
+            guard
+            let magnitude: Magnitude = .init(exactly: magnitude),
+                magnitude <= Self.min.magnitude else {
+                return nil
+            }
+
+            self.init(truncatingIfNeeded: 0 &- magnitude)
+
+        case .int128(.positive, let magnitude):
+            self.init(exactly: magnitude)
+
+        case .int128(.negative, let magnitude):
+            guard
+            let magnitude: Magnitude = .init(exactly: magnitude),
+                magnitude <= Self.min.magnitude else {
+                return nil
+            }
+
+            self.init(truncatingIfNeeded: 0 &- magnitude)
+
+        case .arbitrary(let words):
+            // signed bigint cannot be trimmed without losing the sign bit
+            if  words.bytes.count > MemoryLayout<Magnitude>.size {
+                return nil
+            }
+
+            self.init(exactly: words.load())
         }
     }
 }

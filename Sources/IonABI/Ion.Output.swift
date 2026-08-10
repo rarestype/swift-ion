@@ -152,20 +152,29 @@ extension Ion.Output {
 
     /// Write the low `octets` of the `fixed` value in big-endian order. The very first byte
     /// written will have its sign bit set if the value is negative.
-    @inlinable mutating func write(
-        fixed value: (negative: Bool, magnitude: some FixedWidthInteger & UnsignedInteger),
+    @inlinable mutating func write<Magnitude>(
+        fixed value: (sign: Ion.Sign, magnitude: Magnitude),
         octets: Int,
-    ) {
-        guard value.negative else {
-            self.write(fixed: value.magnitude, octets: octets)
-            return
-        }
-
-        withUnsafeBytes(of: value.magnitude.bigEndian) {
-            let start: Int = $0.index($0.endIndex, offsetBy: 1 - octets)
-            let first: Int = $0.index(before: start)
-            self.append($0[first] | 0b1000_0000)
-            self.append($0[start...])
+    ) where Magnitude: FixedWidthInteger & UnsignedInteger {
+        if case .negative = value.sign {
+            withUnsafeBytes(of: value.magnitude.bigEndian) {
+                let start: Int = $0.index($0.endIndex, offsetBy: 1 - octets)
+                let first: UInt8
+                if  start == $0.startIndex {
+                    first = 0b1000_0000
+                } else {
+                    first = 0b1000_0000 | $0[$0.index(before: start)]
+                }
+                self.append(first)
+                self.append($0[start...])
+            }
+        } else {
+            if  octets > MemoryLayout<Magnitude>.size {
+                self.append(0)
+                self.write(fixed: value.magnitude, octets: MemoryLayout<Magnitude>.size)
+            } else {
+                self.write(fixed: value.magnitude, octets: octets)
+            }
         }
     }
 

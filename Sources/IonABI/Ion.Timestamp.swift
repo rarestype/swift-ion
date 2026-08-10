@@ -24,10 +24,11 @@ extension Ion.Timestamp {
 extension Ion.Timestamp {
     static func parse(from input: inout Ion.Input) throws(Ion.InputError) -> Self {
         let offset: Int16?
-        let parsed: (negative: Bool, magnitude: UInt16) = try input.parse(variable: Int16.self)
-        if  parsed == (negative: true, 0) {
+
+        switch try input.parse(variable: Int16.self) as (Ion.Sign, UInt16) {
+        case (.negative, 0):
             offset = nil
-        } else {
+        case let parsed:
             guard
             let value: Int16 = .init(exactly: parsed) else {
                 throw .expected(.inhabitant, remaining: input.remaining)
