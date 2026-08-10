@@ -153,10 +153,10 @@ extension Ion.Output {
     /// Write the low `octets` of the `fixed` value in big-endian order. The very first byte
     /// written will have its sign bit set if the value is negative.
     @inlinable mutating func write<Magnitude>(
-        fixed value: (negative: Bool, magnitude: Magnitude),
+        fixed value: (sign: Ion.Sign, magnitude: Magnitude),
         octets: Int,
     ) where Magnitude: FixedWidthInteger & UnsignedInteger {
-        if  value.negative {
+        if case .negative = value.sign {
             withUnsafeBytes(of: value.magnitude.bigEndian) {
                 let start: Int = $0.index($0.endIndex, offsetBy: 1 - octets)
                 let first: UInt8

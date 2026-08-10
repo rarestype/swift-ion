@@ -35,15 +35,15 @@ extension FixedWidthInteger {
     }
 }
 extension FixedWidthInteger where Self: SignedInteger {
-    @inlinable init?(exactly: (negative: Bool, magnitude: Magnitude)) {
+    @inlinable init?(exactly: (sign: Ion.Sign, magnitude: Magnitude)) {
         switch exactly {
-        case (negative: true, magnitude: let magnitude):
+        case (.negative, let magnitude):
             if  Self.min.magnitude < magnitude {
                 return nil
             }
             self.init(truncatingIfNeeded: 0 &- magnitude)
 
-        case (negative: false, magnitude: let magnitude):
+        case (.positive, let magnitude):
             self.init(exactly: magnitude)
         }
     }

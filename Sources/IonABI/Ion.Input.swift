@@ -144,10 +144,7 @@ extension Ion.Input {
     /// Parse a variable-length signed integer.
     mutating func parse<T>(
         variable _: T.Type = T.self
-    ) throws(Ion.InputError) -> (
-        negative: Bool,
-        magnitude: T.Magnitude
-    ) where T: SignedInteger {
+    ) throws(Ion.InputError) -> (sign: Ion.Sign, magnitude: T.Magnitude) where T: SignedInteger {
         let first: UInt8 = try self.next()
         let uint6: UInt8 = first & 0b0011_1111
         let final: UInt8 = first & 0b1000_0000
@@ -157,13 +154,13 @@ extension Ion.Input {
             try self.parse(extending: &value)
         }
 
-        return (first & 0b0100_0000 != 0, value)
+        return (first & 0b0100_0000 == 0 ? .positive : .negative, value)
     }
     /// Parse a variable-length signed integer.
     mutating func parse<T>(
         variable _: T.Type = T.self
     ) throws(Ion.InputError) -> T where T: SignedInteger & FixedWidthInteger {
-        let value: (negative: Bool, T.Magnitude) = try self.parse(variable: T.self)
+        let value: (Ion.Sign, T.Magnitude) = try self.parse(variable: T.self)
         guard
         let value: T = .init(exactly: value) else {
             throw self.expected(.inhabitant)
@@ -267,7 +264,7 @@ extension Ion.Input {
     mutating func parse<T>(
         into _: T.Type = T.self,
         octets: Int
-    ) throws(Ion.InputError) -> (negative: Bool, magnitude: T) where T: UnsignedInteger {
+    ) throws(Ion.InputError) -> (sign: Ion.Sign, magnitude: T) where T: UnsignedInteger {
         try self.next(octets) {
             let pattern: Ion.Coefficient.Words = .init(bytes: $0)
             return pattern.load(into: T.self)
