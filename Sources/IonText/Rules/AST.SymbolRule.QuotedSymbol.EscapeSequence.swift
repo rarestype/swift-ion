@@ -20,8 +20,8 @@ extension AST.SymbolRule.QuotedSymbol.EscapeSequence: ParsingRule {
         var unescaped: String = ""
         while true {
             if let scalar: Unicode.Scalar = input.parse(
-                as: AST.SymbolRule<Location>.QuotedSymbol.EscapedCodeUnit?.self
-            ) {
+                    as: AST.SymbolRule<Location>.QuotedSymbol.EscapedCodeUnit?.self
+                ) {
                 unescaped.append(Character.init(scalar))
             } else {
                 try input.parse(as: ASCII.LowercaseU.self)

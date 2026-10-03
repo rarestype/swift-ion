@@ -16,8 +16,7 @@ extension AST.AnnotationRule: ParsingRule {
         typealias Delimiter = Pattern.Pad<DoubleColon, AST.WhitespaceRule<Location>>
         typealias Item = (Prefix, Delimiter)
 
-        let (first, _): (AST.Symbol, Void) =
-            try input.parse(as: Item.self)
+        let (first, _): (AST.Symbol, Void) = try input.parse(as: Item.self)
         var annotations: [AST.Symbol] = [first]
         while let (annotation, _): (AST.Symbol, Void) = try? input.parse(as: Item.self) {
             annotations.append(annotation)

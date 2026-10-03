@@ -35,8 +35,8 @@ extension AST.LongString {
                 continue
             }
             if let _: Void = input.parse(
-                as: UnicodeEncoding<Location, UInt8>.DoubleQuote?.self
-            ) {
+                    as: UnicodeEncoding<Location, UInt8>.DoubleQuote?.self
+                ) {
                 result += "\""
                 continue
             }

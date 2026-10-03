@@ -20,8 +20,8 @@ extension AST.LongString.EscapeSequence: ParsingRule {
         var unescaped: String = ""
         while true {
             if let scalar: Unicode.Scalar = input.parse(
-                as: AST.LongString<Location>.EscapedCodeUnit?.self
-            ) {
+                    as: AST.LongString<Location>.EscapedCodeUnit?.self
+                ) {
                 unescaped.append(Character.init(scalar))
             } else {
                 try input.parse(as: ASCII.LowercaseU.self)
