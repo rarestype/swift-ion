@@ -170,4 +170,91 @@ import IonText
             return
         }
     }
+
+    @Test static func IdentifierSymbol() throws {
+        let ion: Ion = try .parse(atomic: "foo")
+        let value: Ion.AnyValue = try ion.decode()
+        guard case .symbol(.some) = value else {
+            Issue.record("Expected symbol value")
+            return
+        }
+    }
+
+    @Test static func IdentifierSymbolWithDollarSign() throws {
+        let ion: Ion = try .parse(atomic: "$price")
+        let value: Ion.AnyValue = try ion.decode()
+        guard case .symbol(.some) = value else {
+            Issue.record("Expected symbol value")
+            return
+        }
+    }
+
+    @Test static func IdentifierSymbolWithUnderscore() throws {
+        let ion: Ion = try .parse(atomic: "_temp")
+        let value: Ion.AnyValue = try ion.decode()
+        guard case .symbol(.some) = value else {
+            Issue.record("Expected symbol value")
+            return
+        }
+    }
+
+    @Test static func QuotedSymbol() throws {
+        let ion: Ion = try .parse(atomic: "'hello world'")
+        let value: Ion.AnyValue = try ion.decode()
+        guard case .symbol(.some) = value else {
+            Issue.record("Expected symbol value")
+            return
+        }
+    }
+
+    @Test static func QuotedSymbolWithEscape() throws {
+        let ion: Ion = try .parse(atomic: "'it\\'s'")
+        let value: Ion.AnyValue = try ion.decode()
+        guard case .symbol(.some) = value else {
+            Issue.record("Expected symbol value")
+            return
+        }
+    }
+
+    @Test static func KeywordsAreNotSymbols() throws {
+        let trueIon: Ion = try .parse(atomic: "true")
+        #expect(try trueIon.decode(atomic: Bool.self) == true)
+
+        let falseIon: Ion = try .parse(atomic: "false")
+        #expect(try falseIon.decode(atomic: Bool.self) == false)
+
+        let nullIon: Ion = try .parse(atomic: "null")
+        let nullValue: Ion.AnyValue = try nullIon.decode()
+        guard case .null = nullValue else {
+            Issue.record("Expected null value")
+            return
+        }
+    }
+
+    @Test static func StructWithIdentifierKeys() throws {
+        let ion: Ion = try .parse(atomic: "{foo: 1, bar: 2}")
+        let value: Ion.AnyValue = try ion.decode()
+        guard case .struct = value else {
+            Issue.record("Expected struct value")
+            return
+        }
+    }
+
+    @Test static func StructWithQuotedSymbolKeys() throws {
+        let ion: Ion = try .parse(atomic: "{'hello world': 1}")
+        let value: Ion.AnyValue = try ion.decode()
+        guard case .struct = value else {
+            Issue.record("Expected struct value")
+            return
+        }
+    }
+
+    @Test static func StructWithMixedKeys() throws {
+        let ion: Ion = try .parse(atomic: "{\"a\": 1, b: 2, 'c d': 3}")
+        let value: Ion.AnyValue = try ion.decode()
+        guard case .struct = value else {
+            Issue.record("Expected struct value")
+            return
+        }
+    }
 }

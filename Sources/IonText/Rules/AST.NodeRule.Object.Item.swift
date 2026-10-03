@@ -17,9 +17,14 @@ extension AST.NodeRule.Object.Item: ParsingRule {
         key: AST.Symbol,
         value: AST.Node
     ) where Source.Index == Location, Source.Element == Terminal {
-        let key: String = try input.parse(as: AST.StringRule<Location>.self)
+        let key: AST.Symbol
+        if let string: String = input.parse(as: AST.StringRule<Location>?.self) {
+            key = .name(Ion.Symbol.init(string))
+        } else {
+            key = try input.parse(as: AST.SymbolRule<Location>.self)
+        }
         try input.parse(as: AST.ColonRule<Location>.self)
         let value: AST.Node = try input.parse(as: AST.NodeRule<Location>.self)
-        return (.name(Ion.Symbol.init(key)), value)
+        return (key, value)
     }
 }

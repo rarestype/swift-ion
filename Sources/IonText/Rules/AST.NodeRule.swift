@@ -37,6 +37,9 @@ extension AST.NodeRule: ParsingRule {
             let list: AST.List = input.parse(as: Array?.self) {
             value = .list(list)
         } else if
+            let symbol: AST.Symbol = input.parse(as: AST.SymbolRule<Location>?.self) {
+            value = .symbol(symbol)
+        } else if
             let _: Void = input.parse(as: True?.self) {
             value = .bool(true)
         } else if
