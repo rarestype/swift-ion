@@ -4,7 +4,7 @@ extension AST {
     /// Matches a single whitespace character, a line comment, or a block comment.
     ///
     /// To match a sequence of whitespace and comments (including the empty sequence),
-    /// use one of `swift-grammar`'s vector parsing APIs, like ``ParsingInput.parse(as:in:)``.
+    /// use one of `gram`'s vector parsing APIs, like ``ParsingInput.parse(as:in:)``.
     enum WhitespaceRule<Location>: ParsingRule {
         typealias Terminal = UInt8
         typealias Construction = Void
