@@ -383,4 +383,88 @@ import IonText
         let ion: Ion = try .parse(atomic: "\"\"\"hello\nworld\"\"\"")
         #expect(try ion.decode(atomic: String.self) == "hello\nworld")
     }
+
+    @Test static func ListWithTrailingComma() throws {
+        let ion: Ion = try .parse(atomic: "[1, 2, 3,]")
+        let values: [Int] = try ion.decode()
+        #expect(values == [1, 2, 3])
+    }
+
+    @Test static func ListWithSingleElementTrailingComma() throws {
+        let ion: Ion = try .parse(atomic: "[42,]")
+        let values: [Int] = try ion.decode()
+        #expect(values == [42])
+    }
+
+    @Test static func ListWithTrailingCommaAndWhitespace() throws {
+        let ion: Ion = try .parse(atomic: "[\n  1,\n  2,\n]")
+        let values: [Int] = try ion.decode()
+        #expect(values == [1, 2])
+    }
+
+    @Test static func ListWithTrailingCommaAndComments() throws {
+        let ion: Ion = try .parse(atomic: "[1, 2, // trailing\n /* comment */]")
+        let values: [Int] = try ion.decode()
+        #expect(values == [1, 2])
+    }
+
+    @Test static func StructWithTrailingComma() throws {
+        let ion: Ion = try .parse(atomic: "{foo: 1, bar: 2,}")
+        let value: Ion.AnyValue = try ion.decode()
+        guard case .struct = value else {
+            Issue.record("Expected struct value")
+            return
+        }
+    }
+
+    @Test static func StructWithSingleFieldTrailingComma() throws {
+        let ion: Ion = try .parse(atomic: "{key: 42,}")
+        let value: Ion.AnyValue = try ion.decode()
+        guard case .struct = value else {
+            Issue.record("Expected struct value")
+            return
+        }
+    }
+
+    @Test static func StructWithTrailingCommaAndWhitespace() throws {
+        let ion: Ion = try .parse(atomic: "{\n  foo: 1,\n  bar: 2,\n}")
+        let value: Ion.AnyValue = try ion.decode()
+        guard case .struct = value else {
+            Issue.record("Expected struct value")
+            return
+        }
+    }
+
+    @Test static func NestedContainersWithTrailingCommas() throws {
+        let ion: Ion = try .parse(atomic: "[{a: [1, 2,],}, {b: 3,},]")
+        let value: Ion.AnyValue = try ion.decode()
+        guard case .list = value else {
+            Issue.record("Expected list value")
+            return
+        }
+    }
+
+    @Test static func EmptyListWithCommaRejected() {
+        #expect(throws: (any Error).self) {
+            let _: Ion = try .parse(atomic: "[,]")
+        }
+    }
+
+    @Test static func EmptyStructWithCommaRejected() {
+        #expect(throws: (any Error).self) {
+            let _: Ion = try .parse(atomic: "{,}")
+        }
+    }
+
+    @Test static func ListWithConsecutiveCommasRejected() {
+        #expect(throws: (any Error).self) {
+            let _: Ion = try .parse(atomic: "[1,,]")
+        }
+    }
+
+    @Test static func StructWithConsecutiveCommasRejected() {
+        #expect(throws: (any Error).self) {
+            let _: Ion = try .parse(atomic: "{a: 1,,}")
+        }
+    }
 }

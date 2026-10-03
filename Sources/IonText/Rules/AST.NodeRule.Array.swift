@@ -5,6 +5,7 @@ extension AST.NodeRule {
     ///
     /// Array literals begin and end with square brackets (`[` and `]`), and
     /// recursively contain instances of ``AST.NodeRule`` separated by ``AST.CommaRule``s.
+    /// Trailing commas are allowed.
     enum Array {}
 }
 extension AST.NodeRule.Array: ParsingRule {
@@ -23,6 +24,7 @@ extension AST.NodeRule.Array: ParsingRule {
                 ) {
                 elements.append(next)
             }
+            let _: Void? = input.parse(as: AST.CommaRule<Location>?.self)
         } else {
             elements = []
         }
