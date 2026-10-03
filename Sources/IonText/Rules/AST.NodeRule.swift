@@ -31,6 +31,9 @@ extension AST.NodeRule: ParsingRule {
                 throw .arbitrary(Ion.InvalidNumberError.unsupported(string))
             }
         } else if
+            let string: String = input.parse(as: AST.LongString<Location>?.self) {
+            value = .string(string)
+        } else if
             let string: String = input.parse(as: AST.StringRule<Location>?.self) {
             value = .string(string)
         } else if

@@ -306,4 +306,29 @@ import IonText
         let ion: Ion = try .parse(atomic: "'hello world'::42")
         #expect(try ion.decode(atomic: Int.self) == 42)
     }
+
+    @Test static func LongStringBasic() throws {
+        let ion: Ion = try .parse(atomic: "\"\"\"hello\"\"\"")
+        #expect(try ion.decode(atomic: String.self) == "hello")
+    }
+
+    @Test static func LongStringWithEmbeddedQuotes() throws {
+        let ion: Ion = try .parse(atomic: "\"\"\"has \" and \"\" inside\"\"\"")
+        #expect(try ion.decode(atomic: String.self) == "has \" and \"\" inside")
+    }
+
+    @Test static func LongStringLineContinuation() throws {
+        let ion: Ion = try .parse(atomic: "\"\"\"hello\\\nworld\"\"\"")
+        #expect(try ion.decode(atomic: String.self) == "helloworld")
+    }
+
+    @Test static func LongStringConcatenation() throws {
+        let ion: Ion = try .parse(atomic: "\"\"\"hello\"\"\" \"\"\"world\"\"\"")
+        #expect(try ion.decode(atomic: String.self) == "helloworld")
+    }
+
+    @Test static func LongStringWithEscape() throws {
+        let ion: Ion = try .parse(atomic: "\"\"\"hello\\nworld\"\"\"")
+        #expect(try ion.decode(atomic: String.self) == "hello\nworld")
+    }
 }
