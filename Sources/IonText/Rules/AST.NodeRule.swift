@@ -15,6 +15,9 @@ extension AST.NodeRule: ParsingRule {
         _ input: inout ParsingInput<some ParsingDiagnostics<Source>>
     ) throws(PatternMatchingError) -> AST.Node
         where Source.Element == Terminal, Source.Index == Location {
+        if let annotated: AST.Node = input.parse(as: AST.AnnotationRule<Location>?.self) {
+            return annotated
+        }
         let value: AST.AnyValue
         if  let number: AST.Number = input.parse(as: AST.NumberRule<Location>?.self) {
             switch number {
@@ -37,6 +40,9 @@ extension AST.NodeRule: ParsingRule {
             let list: AST.List = input.parse(as: Array?.self) {
             value = .list(list)
         } else if
+            let any: AST.AnyValue = input.parse(as: AST.TypedNull<Location>?.self) {
+            value = any
+        } else if
             let symbol: AST.Symbol = input.parse(as: AST.SymbolRule<Location>?.self) {
             value = .symbol(symbol)
         } else if
@@ -49,8 +55,7 @@ extension AST.NodeRule: ParsingRule {
             let float: Float = input.parse(as: AST.NodeRule<Location>.Nonfinite?.self) {
             value = .float(.float32(float))
         } else {
-            try input.parse(as: Null.self)
-            value = .null(.null)
+            throw .unexpectedValue
         }
 
         return .init(types: nil, value: value)

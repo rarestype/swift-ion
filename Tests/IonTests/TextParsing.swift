@@ -257,4 +257,53 @@ import IonText
             return
         }
     }
+
+    @Test static func UntypedNull() throws {
+        let ion: Ion = try .parse(atomic: "null")
+        let value: Ion.AnyValue = try ion.decode()
+        guard case .null = value else {
+            Issue.record("Expected null value")
+            return
+        }
+    }
+
+    @Test(
+        arguments: [
+            "null.bool",
+            "null.int",
+            "null.float",
+            "null.decimal",
+            "null.timestamp",
+            "null.symbol",
+            "null.string",
+            "null.clob",
+            "null.blob",
+            "null.list",
+            "null.sexp",
+            "null.struct",
+        ]
+    ) static func TypedNulls(_ text: String) throws {
+        let ion: Ion = try .parse(atomic: text)
+        _ = try ion.decode() as Ion.AnyValue
+    }
+
+    @Test static func SingleAnnotation() throws {
+        let ion: Ion = try .parse(atomic: "foo::42")
+        #expect(try ion.decode(atomic: Int.self) == 42)
+    }
+
+    @Test static func StackedAnnotations() throws {
+        let ion: Ion = try .parse(atomic: "a::b::c::42")
+        #expect(try ion.decode(atomic: Int.self) == 42)
+    }
+
+    @Test static func AnnotationOnString() throws {
+        let ion: Ion = try .parse(atomic: "greeting::\"hello\"")
+        #expect(try ion.decode(atomic: String.self) == "hello")
+    }
+
+    @Test static func QuotedSymbolAnnotation() throws {
+        let ion: Ion = try .parse(atomic: "'hello world'::42")
+        #expect(try ion.decode(atomic: Int.self) == 42)
+    }
 }
