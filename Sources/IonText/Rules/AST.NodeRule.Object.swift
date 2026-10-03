@@ -5,7 +5,7 @@ extension AST.NodeRule {
     ///
     /// Object literals begin and end with curly braces (`{` and `}`), and
     /// contain instances of ``Item`` separated by ``AST.CommaRule``s.
-    /// Trailing commas are not allowed.
+    /// Trailing commas are allowed.
     enum Object {}
 }
 extension AST.NodeRule.Object: ParsingRule {
@@ -24,6 +24,7 @@ extension AST.NodeRule.Object: ParsingRule {
                 ) {
                 items.append(next)
             }
+            let _: Void? = input.parse(as: AST.CommaRule<Location>?.self)
         } else {
             items = []
         }
