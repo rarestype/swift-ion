@@ -22,21 +22,22 @@ extension AST {
             guard end > start else {
                 throw .unexpectedValue
             }
-            let name: String = .init(decoding: input[start ..< end], as: Unicode.UTF8.self)
-            if name == "bool" { return .null(.bool) }
-            if name == "int" { return .null(.int(.positive)) }
-            if name == "float" { return .null(.float) }
-            if name == "decimal" { return .null(.decimal) }
-            if name == "timestamp" { return .null(.timestamp) }
-            if name == "symbol" { return .null(.symbol) }
-            if name == "string" { return .null(.string) }
-            if name == "clob" { return .null(.clob) }
-            if name == "blob" { return .null(.blob) }
-            if name == "list" { return .null(.list) }
-            if name == "sexp" { return .null(.sexp) }
-            if name == "struct" { return .null(.struct) }
-            if name == "null" { return .null(.null) }
-            throw .unexpectedValue
+            switch String.init(decoding: input[start ..< end], as: Unicode.UTF8.self) {
+            case "bool": return .null(.bool)
+            case "int": return .null(.int(.positive))
+            case "float": return .null(.float)
+            case "decimal": return .null(.decimal)
+            case "timestamp": return .null(.timestamp)
+            case "symbol": return .null(.symbol)
+            case "string": return .null(.string)
+            case "clob": return .null(.clob)
+            case "blob": return .null(.blob)
+            case "list": return .null(.list)
+            case "sexp": return .null(.sexp)
+            case "struct": return .null(.struct)
+            case "null": return .null(.null)
+            default: throw .unexpectedValue
+            }
         }
     }
 }
