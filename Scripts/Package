@@ -1,0 +1,156 @@
+#!/bin/bash
+
+set -euo pipefail
+
+BUILD_LOCAL='false'
+BUILD_XCFRAMEWORKS_DESTINATION='.build/xcframeworks_'
+BUILD_PACKAGE_ROOT='.'
+products=('IonABI' 'IonText' 'Ion')
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --local)
+            BUILD_LOCAL='true'
+            shift
+            ;;
+        --output)
+            BUILD_XCFRAMEWORKS_DESTINATION="$2"
+            shift 2
+            ;;
+
+        *)
+            echo "Unknown argument: $1"
+            exit 1
+            ;;
+    esac
+done
+
+build_linux() {
+    local scratch='.build.xcode'
+    local release="${scratch}/release"
+
+    for product in "${products[@]}"; do
+        BUILD_LIBRARY_AS_BINARY='true' \
+        swift build -c release \
+            --explicit-target-dependency-import-check=warn \
+            --scratch-path "$scratch" \
+            --product "$product"
+    done
+
+    for product in "${products[@]}"; do
+        local xcframework="${BUILD_XCFRAMEWORKS_DESTINATION}/${product}.xcframework"
+        local contents="${xcframework}/linux-$(uname -m)"
+        mkdir -p "$contents"
+
+        local library="lib${product}.so"
+        if [[ ! -f "${release}/${library}" ]]; then
+            echo "Error: ${library} not found in build output"
+            exit 1
+        fi
+
+        cp -f "${release}/${library}" "${contents}/${library}"
+
+        local module="$product"
+        for resource in 'swiftinterface' 'swiftdoc'; do
+            local file="${module}.${resource}"
+            if [[ -f "${release}/Modules/${file}" ]]; then
+                cp -f "${release}/Modules/${file}" "${contents}/${file}"
+            fi
+        done
+
+        chmod +x "${contents}/${library}"
+
+        cat Scripts/Info.plist.template | \
+        sed \
+            -e "s/__LIBRARY__/${product}/g" \
+            -e "s/__ARCHITECTURE__/$(uname -m)/g" > "${xcframework}/Info.plist"
+    done
+}
+
+build_macOS() {
+    local archives="${BUILD_XCFRAMEWORKS_DESTINATION}/archives"
+    rm -rf "$archives"
+    mkdir -p "$archives"
+
+    for platform in 'macOS'; do
+        for product in "${products[@]}"; do
+            local xcarchive="${archives}/${platform}_${product}.xcarchive"
+
+            echo "Archiving ${product} for ${platform}..."
+
+            BUILD_LIBRARY_AS_BINARY='true' \
+            xcodebuild archive \
+                -workspace "$BUILD_PACKAGE_ROOT" \
+                -scheme "$product" \
+                -quiet \
+                -destination "platform=${platform},arch=arm64" \
+                -archivePath "$xcarchive" \
+                -derivedDataPath ".build.xcode" \
+                -skipMacroValidation \
+                SKIP_INSTALL=NO \
+                BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+                SWIFT_SERIALIZE_DEBUGGING_OPTIONS=NO \
+                INSTALL_PATH="Library/Frameworks" \
+                DEBUG_INFORMATION_FORMAT="dwarf" \
+                VALID_ARCHS=arm64
+
+            # inject the .swiftinterface files into the xcarchive
+            local ArchiveIntermediates=".build.xcode/Build/Intermediates.noindex/ArchiveIntermediates"
+            local Modules="${xcarchive}/Products/Library/Frameworks/${product}.framework/Modules"
+
+            # Use the current product as the anchor for the intermediates path
+            local Release="${ArchiveIntermediates}/${product}/BuildProductsPath/Release"
+
+            # assume module has the same name as product, by convention
+            local module="$product"
+            mkdir -p "${Modules}/${module}.swiftmodule"
+
+            # if building for local development, include sourcemaps
+            local sourceinfo_prefix="${ArchiveIntermediates}/${product}/IntermediateBuildFilesPath"
+            local sourceinfo="/Release/${module}.build/Objects-normal/arm64/${module}.swiftsourceinfo"
+            local sourceinfo_matches=("${sourceinfo_prefix}"/*.build"$sourceinfo")
+            local sourceinfo_file="${sourceinfo_matches[0]}"
+
+            if [[ -f "$sourceinfo_file" && "$BUILD_LOCAL" == 'true' ]]; then
+                cp "$sourceinfo_file" "${Modules}/${module}.swiftsourceinfo"
+            fi
+
+            for resource in 'swiftdoc' 'swiftinterface'; do
+                local expected="${module}.swiftmodule/arm64-apple-macos.${resource}"
+                if [ -f "${Release}/${expected}" ]; then
+                    cp "${Release}/${expected}" "${Modules}/${expected}"
+                fi
+            done
+
+            # create the xcframework
+            local xcframework="${product}.xcframework"
+            local xcframework_path="${BUILD_XCFRAMEWORKS_DESTINATION}/${xcframework}"
+
+            # order of arguments is significant, for some reason
+            xcodebuild -create-xcframework \
+                -archive "$xcarchive" \
+                -framework "${product}.framework" \
+                -output "$xcframework_path"
+        done
+    done
+}
+
+mkdir -p "$BUILD_XCFRAMEWORKS_DESTINATION"
+rm -rf "${BUILD_XCFRAMEWORKS_DESTINATION}"/*.xcframework
+rm -f "${BUILD_XCFRAMEWORKS_DESTINATION}"/*.xcframework.zip
+
+if [[ $(uname) == "Darwin" ]]; then
+    echo "Building for macOS..."
+    build_macOS
+else
+    echo "Building for Linux..."
+    build_linux
+fi
+
+if [[ -d Scripts/TestClient ]]; then
+    echo "💞 testing xcframeworks consumption"
+
+    swift build --package-path Scripts/TestClient --experimental-xcframeworks-on-linux
+fi
+
+echo "💖 built xcframeworks at path: ${BUILD_XCFRAMEWORKS_DESTINATION}"

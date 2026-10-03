@@ -13,6 +13,8 @@
 /Examples/.build.*
 /Examples/Package.resolved
 
-/Packages/
+/Scripts/*/.build
+/Scripts/*/Package.resolved
+
 /Package.resolved
 

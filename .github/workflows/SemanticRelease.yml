@@ -72,10 +72,18 @@ jobs:
 
                     NEXT_VERSION="${MAJOR}.${MINOR}.${PATCH}"
                     echo "version=$NEXT_VERSION" >> "$GITHUB_OUTPUT"
+    deploy:
+        name: Deploy
+        needs: release
+        uses: ./.github/workflows/Deploy.yml
+        secrets: inherit
+        with:
+            version: ${{ needs.release.outputs.version }}
     publish:
         name: Publish Release
         needs:
             -   release
+            -   deploy
 
         runs-on: ubuntu-24.04-arm
         env:
