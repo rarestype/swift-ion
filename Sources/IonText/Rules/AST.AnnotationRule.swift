@@ -3,38 +3,36 @@ import IonABI
 
 extension AST {
     /// Matches an annotated value: one or more `symbol::` prefixes followed by a value.
-    ///
-    /// If the input does not begin with `symbol::`, this rule fails without
-    /// consuming input.
-    enum AnnotationRule<Location>: ParsingRule {
-        typealias Terminal = UInt8
-        typealias Construction = AST.Node
+    enum AnnotationRule<Location> {}
+}
+extension AST.AnnotationRule: ParsingRule {
+    typealias Terminal = UInt8
+    typealias Construction = AST.Node
 
-        static func parse<Source>(
-            _ input: inout ParsingInput<some ParsingDiagnostics<Source>>
-        ) throws(PatternMatchingError) -> AST.Node
-            where Source.Element == Terminal, Source.Index == Location {
-            let saved: Location = input.index
-            guard let first: AST.Symbol = input.parse(as: Prefix?.self),
-                  input.parse(as: DoubleColon?.self) != nil
-            else {
-                input.index = saved
-                throw .unexpectedValue
-            }
-            var annotations: [AST.Symbol] = [first]
-            while let sym: AST.Symbol = input.parse(as: Prefix?.self),
-                  input.parse(as: DoubleColon?.self) != nil {
-                annotations.append(sym)
-            }
-            input.parse(as: WhitespaceRule<Location>.self, in: Void.self)
-            let value: AST.Node = try input.parse(as: NodeRule<Location>.self)
-            let types: AST.Node.Types
-            if annotations.count == 1 {
-                types = .init(first: annotations[0])
-            } else {
-                types = .init(first: annotations[0], extra: Array.init(annotations.dropFirst()))
-            }
-            return .init(types: types, value: value.value)
+    static func parse<Source>(
+        _ input: inout ParsingInput<some ParsingDiagnostics<Source>>
+    ) throws(PatternMatchingError) -> AST.Node
+        where Source.Element == Terminal, Source.Index == Location {
+        typealias Delimiter = Pattern.Pad<DoubleColon, AST.WhitespaceRule<Location>>
+        typealias Item = (Prefix, Delimiter)
+
+        let (first, _): (AST.Symbol, Void) =
+            try input.parse(as: Item.self)
+        var annotations: [AST.Symbol] = [first]
+        while let (annotation, _): (AST.Symbol, Void) = try? input.parse(as: Item.self) {
+            annotations.append(annotation)
         }
+        let value: AST.Node = try input.parse(as: AST.NodeRule<Location>.self)
+        let allAnnotations: [AST.Symbol]
+        if let existing: AST.Node.Types = value.types {
+            allAnnotations = annotations + [existing.first] + existing.extra
+        } else {
+            allAnnotations = annotations
+        }
+        let types: AST.Node.Types = .init(
+            first: allAnnotations[0],
+            extra: Array.init(allAnnotations.dropFirst())
+        )
+        return .init(types: types, value: value.value)
     }
 }

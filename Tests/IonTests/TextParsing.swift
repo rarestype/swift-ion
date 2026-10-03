@@ -151,6 +151,16 @@ import IonText
         #expect(try ion.decode(atomic: Int.self) == 42)
     }
 
+    @Test static func BlockCommentConsecutiveAsterisks() throws {
+        let ion: Ion = try .parse(atomic: "/* **/ 42")
+        #expect(try ion.decode(atomic: Int.self) == 42)
+    }
+
+    @Test static func BlockCommentWithMultipleAsterisks() throws {
+        let ion: Ion = try .parse(atomic: "/* /***/ */ 42")
+        #expect(try ion.decode(atomic: Int.self) == 42)
+    }
+
     @Test static func MixedCommentsAndWhitespace() throws {
         let ion: Ion = try .parse(atomic: " // line\n /* block */ \t 42")
         #expect(try ion.decode(atomic: Int.self) == 42)
@@ -194,6 +204,24 @@ import IonText
         let value: Ion.AnyValue = try ion.decode()
         guard case .symbol(.some) = value else {
             Issue.record("Expected symbol value")
+            return
+        }
+    }
+
+    @Test static func IdentifierSymbolWithNullPrefix() throws {
+        let ion: Ion = try .parse(atomic: "null_value")
+        let value: Ion.AnyValue = try ion.decode()
+        guard case .symbol(.some) = value else {
+            Issue.record("Expected symbol value")
+            return
+        }
+    }
+
+    @Test static func StructWithNullPrefixedValue() throws {
+        let ion: Ion = try .parse(atomic: "{key: null_value}")
+        let value: Ion.AnyValue = try ion.decode()
+        guard case .struct = value else {
+            Issue.record("Expected struct value")
             return
         }
     }
@@ -307,6 +335,25 @@ import IonText
         #expect(try ion.decode(atomic: Int.self) == 42)
     }
 
+    @Test static func AnnotationOnSymbol() throws {
+        let ion: Ion = try .parse(atomic: "foo::bar")
+        let value: Ion.AnyValue = try ion.decode()
+        guard case .symbol(.some) = value else {
+            Issue.record("Expected symbol value")
+            return
+        }
+    }
+
+    @Test static func AnnotationWithWhitespace() throws {
+        let ion: Ion = try .parse(atomic: "foo :: 42")
+        #expect(try ion.decode(atomic: Int.self) == 42)
+    }
+
+    @Test static func StackedAnnotationsWithWhitespace() throws {
+        let ion: Ion = try .parse(atomic: "a:: b:: 42")
+        #expect(try ion.decode(atomic: Int.self) == 42)
+    }
+
     @Test static func LongStringBasic() throws {
         let ion: Ion = try .parse(atomic: "\"\"\"hello\"\"\"")
         #expect(try ion.decode(atomic: String.self) == "hello")
@@ -329,6 +376,11 @@ import IonText
 
     @Test static func LongStringWithEscape() throws {
         let ion: Ion = try .parse(atomic: "\"\"\"hello\\nworld\"\"\"")
+        #expect(try ion.decode(atomic: String.self) == "hello\nworld")
+    }
+
+    @Test static func LongStringWithLiteralNewline() throws {
+        let ion: Ion = try .parse(atomic: "\"\"\"hello\nworld\"\"\"")
         #expect(try ion.decode(atomic: String.self) == "hello\nworld")
     }
 }

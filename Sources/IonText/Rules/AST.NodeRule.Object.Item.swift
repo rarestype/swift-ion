@@ -2,7 +2,7 @@ internal import Grammar
 import IonABI
 
 extension AST.NodeRule.Object {
-    /// Matches an key-value expression.
+    /// Matches a key-value expression.
     ///
     /// A key-value expression consists of a ``AST.StringRule``, a ``AST.ColonRule``, and
     /// a recursive instance of ``AST.NodeRule``.
