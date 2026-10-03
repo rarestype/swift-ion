@@ -26,14 +26,32 @@ extension AST.Node: IonEncodable {
         }
     }
 }
+extension AST {
+    /// Matches a complete Ion text value, including leading and trailing
+    /// whitespace and comments.
+    enum RootRule<Location>: ParsingRule {
+        typealias Terminal = UInt8
+        typealias Construction = AST.Node
+
+        static func parse<Source>(
+            _ input: inout ParsingInput<some ParsingDiagnostics<Source>>
+        ) throws(PatternMatchingError) -> AST.Node
+            where Source: Collection<Terminal>, Source.Index == Location {
+            input.parse(as: WhitespaceRule<Location>.self, in: Void.self)
+            let node: AST.Node = try input.parse(as: NodeRule<Location>.self)
+            input.parse(as: WhitespaceRule<Location>.self, in: Void.self)
+            return node
+        }
+    }
+}
 extension AST.Node {
     init(parsing span: borrowing RawSpan) throws(PatternMatchingError) {
-        self = try span.withUnsafeBytes(AST.NodeRule<Int>.parse(_:))
+        self = try span.withUnsafeBytes(AST.RootRule<Int>.parse(_:))
     }
     init(parsing string: borrowing String) throws(PatternMatchingError) {
-        self = try AST.NodeRule<String.Index>.parse(string.utf8)
+        self = try AST.RootRule<String.Index>.parse(string.utf8)
     }
     init(parsing string: borrowing Substring) throws(PatternMatchingError) {
-        self = try AST.NodeRule<String.Index>.parse(string.utf8)
+        self = try AST.RootRule<String.Index>.parse(string.utf8)
     }
 }

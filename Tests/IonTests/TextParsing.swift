@@ -115,4 +115,59 @@ import IonText
     //         Issue.record("Expected .int64 coefficient")
     //     }
     // }
+
+    @Test static func LineCommentBeforeValue() throws {
+        let ion: Ion = try .parse(atomic: "// comment\n42")
+        #expect(try ion.decode(atomic: Int.self) == 42)
+    }
+
+    @Test static func LineCommentAfterValue() throws {
+        let ion: Ion = try .parse(atomic: "42 // comment")
+        #expect(try ion.decode(atomic: Int.self) == 42)
+    }
+
+    @Test static func LineCommentOnly() throws {
+        let ion: Ion = try .parse(atomic: "// just a comment\ntrue")
+        #expect(try ion.decode(atomic: Bool.self) == true)
+    }
+
+    @Test static func BlockCommentBeforeValue() throws {
+        let ion: Ion = try .parse(atomic: "/* comment */42")
+        #expect(try ion.decode(atomic: Int.self) == 42)
+    }
+
+    @Test static func BlockCommentAfterValue() throws {
+        let ion: Ion = try .parse(atomic: "42/* comment */")
+        #expect(try ion.decode(atomic: Int.self) == 42)
+    }
+
+    @Test static func BlockCommentMultiline() throws {
+        let ion: Ion = try .parse(atomic: "/* line 1\nline 2 */42")
+        #expect(try ion.decode(atomic: Int.self) == 42)
+    }
+
+    @Test static func NestedBlockComment() throws {
+        let ion: Ion = try .parse(atomic: "/* outer /* inner */ still outer */42")
+        #expect(try ion.decode(atomic: Int.self) == 42)
+    }
+
+    @Test static func MixedCommentsAndWhitespace() throws {
+        let ion: Ion = try .parse(atomic: " // line\n /* block */ \t 42")
+        #expect(try ion.decode(atomic: Int.self) == 42)
+    }
+
+    @Test static func CommentInsideList() throws {
+        let ion: Ion = try .parse(atomic: "[1, // first\n 2 /* second */, 3]")
+        let values: [Int] = try ion.decode()
+        #expect(values == [1, 2, 3])
+    }
+
+    @Test static func CommentInsideStruct() throws {
+        let ion: Ion = try .parse(atomic: "{/* key */ \"a\": 1, // comment\n \"b\": 2}")
+        let value: Ion.AnyValue = try ion.decode()
+        guard case .struct = value else {
+            Issue.record("Expected struct value")
+            return
+        }
+    }
 }
