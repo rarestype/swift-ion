@@ -9,9 +9,8 @@ extension SIMD2: IonDecodable, IonDecodableList where Scalar: IonDecodable {
     @inlinable public init(ion: inout Ion.ListDecoder) throws {
         let x: Scalar = try ion[+].decode(to: Scalar.self)
         let y: Scalar = try ion[+].decode(to: Scalar.self)
-        if  case _? = try ion[+]?.decode(to: Ion.AnyValue.self) {
-            throw Ion.ListLengthError.init(expected: 2)
-        }
+        // a list with more elements than that fails to decode the next one
+        _ = try ion[+]?.decode(to: Never.self)
         self.init(x, y)
     }
 }

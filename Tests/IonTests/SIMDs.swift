@@ -28,12 +28,17 @@ import Testing
         }
     }
 
+    /// A list with an element left over fails on that element, even when it is a null.
     @Test static func TooLong() throws {
-        let ion: Ion = .encode(atomic: [1, 2, 3, 4] as [Int])
-        let error: Ion.ListLengthError = try #require(throws: Ion.ListLengthError.self) {
-            try ion.decode(atomic: SIMD3<Int>.self)
+        let lists: [Ion] = [
+            .encode(atomic: [1, 2, 3, 4] as [Int]),
+            .encode(atomic: [1, 2, 3, nil] as [Int?]),
+        ]
+        for ion: Ion in lists {
+            let error: any Error = try #require(throws: (any Error).self) {
+                try ion.decode(atomic: SIMD3<Int>.self)
+            }
+            #expect("\(error)".hasPrefix("ion decoding error in \\.3:"))
         }
-        #expect(error == .init(expected: 3))
-        #expect("\(error)" == "list has more than the 3 elements expected")
     }
 }

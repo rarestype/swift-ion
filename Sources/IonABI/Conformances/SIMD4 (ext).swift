@@ -13,9 +13,8 @@ extension SIMD4: IonDecodable, IonDecodableList where Scalar: IonDecodable {
         let y: Scalar = try ion[+].decode(to: Scalar.self)
         let z: Scalar = try ion[+].decode(to: Scalar.self)
         let w: Scalar = try ion[+].decode(to: Scalar.self)
-        if  case _? = try ion[+]?.decode(to: Ion.AnyValue.self) {
-            throw Ion.ListLengthError.init(expected: 4)
-        }
+        // a list with more elements than that fails to decode the next one
+        _ = try ion[+]?.decode(to: Never.self)
         self.init(x, y, z, w)
     }
 }
